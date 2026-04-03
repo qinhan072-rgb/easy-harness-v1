@@ -12,7 +12,7 @@ export function PageHeader({
   return (
     <header className="page-header">
       <div>
-        <span className="eyebrow">Easy Harness V1</span>
+        <span className="eyebrow">Easy Harness</span>
         <h2>{title}</h2>
         <p>{description}</p>
       </div>

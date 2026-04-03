@@ -1,0 +1,4 @@
+storage/requests.json
+storage/uploads/*
+!storage/.gitkeep
+!storage/uploads/.gitkeep

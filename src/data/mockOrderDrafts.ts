@@ -5,8 +5,8 @@ import type {
 } from '../types/prototype';
 
 export const sourceTypeLabels: Record<FlowSource, string> = {
-  canvas: 'Configurator Canvas',
-  upload: 'Upload / Assisted Request',
+  canvas: 'Canvas-Assisted Ordering',
+  upload: 'Upload-Assisted Intake',
 };
 
 export const orderStatusCopy: Record<
@@ -15,16 +15,16 @@ export const orderStatusCopy: Record<
 > = {
   draft: {
     label: 'Draft ready',
-    description: 'Front-end generated draft order, ready for review.',
+    description: 'Standardized draft boundary prepared for review.',
   },
   confirmed: {
-    label: 'Confirmed',
-    description: 'The draft has been confirmed in this prototype flow.',
+    label: 'Draft confirmed',
+    description: 'The current draft boundary has been accepted in this prototype.',
   },
   'changes-requested': {
     label: 'Changes requested',
     description:
-      'The draft needs updates before it should be treated as accepted.',
+      'The draft needs updates before it should move closer to order acceptance.',
   },
 };
 
@@ -32,17 +32,17 @@ export const processingTemplates: Record<FlowSource, ProcessingInfo> = {
   canvas: {
     title: '系统正在整理你的订单草案',
     detail:
-      'We are validating connector choices, wire paths, and the fixed-syntax canvas summary.',
+      'Easy Harness is standardizing your canvas-assisted setup into an orderable harness draft.',
     etaLabel: 'Estimated processing time: 2 to 4 minutes',
     timeline: [
-      { stage: 'Canvas objects captured', time: 'Now', state: 'done' },
+      { stage: 'Canvas structure captured', time: 'Now', state: 'done' },
       {
-        stage: 'Connection rules reviewed',
+        stage: 'Order boundary reviewed',
         time: 'About 30 seconds',
         state: 'active',
       },
       {
-        stage: 'Quote summary packaged',
+        stage: 'Draft summary packaged',
         time: 'About 2 minutes',
         state: 'upcoming',
       },
@@ -54,36 +54,36 @@ export const processingTemplates: Record<FlowSource, ProcessingInfo> = {
     ],
     jobs: [
       {
-        title: 'Connector family check',
-        owner: 'Canvas validator',
-        detail: 'Ensuring connector blocks and pin counts are internally consistent.',
+        title: 'Structured canvas review',
+        owner: 'Canvas order boundary',
+        detail: 'Checking whether the current setup fits the narrow orderable canvas path.',
       },
       {
-        title: 'Wire path packaging',
-        owner: 'Quote builder',
-        detail: 'Summarizing wire objects into a mock pricing package.',
+        title: 'Wire path standardization',
+        owner: 'Draft preparation',
+        detail: 'Turning the defined wire path into a standardized draft summary.',
       },
       {
-        title: 'Prototype handoff card',
+        title: 'Order draft assembly',
         owner: 'Order assembler',
-        detail: 'Preparing the front-end order draft for review.',
+        detail: 'Preparing the shared order draft for review and confirmation.',
       },
     ],
   },
   upload: {
     title: '系统正在整理你的订单草案',
     detail:
-      'We are turning the uploaded request into a structured prototype order draft.',
+      'Easy Harness is turning your references and notes into a standardized order draft.',
     etaLabel: 'Estimated processing time: 3 to 5 minutes',
     timeline: [
-      { stage: 'Request form captured', time: 'Now', state: 'done' },
+      { stage: 'Request summary captured', time: 'Now', state: 'done' },
       {
-        stage: 'Attachment placeholders indexed',
+        stage: 'Reference set indexed',
         time: 'About 45 seconds',
         state: 'active',
       },
       {
-        stage: 'Scope summary generated',
+        stage: 'Assisted draft summary generated',
         time: 'About 2 minutes',
         state: 'upcoming',
       },
@@ -95,19 +95,19 @@ export const processingTemplates: Record<FlowSource, ProcessingInfo> = {
     ],
     jobs: [
       {
-        title: 'Request normalization',
+        title: 'Reference normalization',
         owner: 'Intake parser',
-        detail: 'Converting the lightweight upload form into a common order summary.',
+        detail: 'Converting uploaded request context into the shared order draft structure.',
       },
       {
-        title: 'Attachment placeholder review',
-        owner: 'Assistant mock',
-        detail: 'Tracking which placeholders will inform the quote review.',
+        title: 'Reference review',
+        owner: 'AI + human review',
+        detail: 'Tracking which uploaded materials will shape the draft boundary.',
       },
       {
-        title: 'Prototype quote seed',
+        title: 'Assisted draft seed',
         owner: 'Order assembler',
-        detail: 'Creating a first-pass front-end estimate for the draft order.',
+        detail: 'Creating the first standardized draft package for order review.',
       },
     ],
   },

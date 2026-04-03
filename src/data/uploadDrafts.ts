@@ -4,17 +4,17 @@ export const leadTimePreferenceOptions = [
   {
     value: 'standard',
     label: 'Standard',
-    hint: 'Best for a normal prototype review cycle.',
+    hint: 'Standard quotation schedule.',
   },
   {
     value: 'expedite',
     label: 'Expedite',
-    hint: 'Use when the prototype build needs faster turnaround.',
+    hint: 'Shorter turnaround where capacity allows.',
   },
   {
     value: 'flexible',
     label: 'Flexible',
-    hint: 'Use when schedule can be tuned after engineering review.',
+    hint: 'Timing can be aligned after intake review.',
   },
 ] as const;
 

@@ -1,9 +1,10 @@
 export const navItems = [
   { label: 'Home', path: '/' },
-  { label: 'Configurator Canvas', path: '/configurator' },
-  { label: 'Upload / Assisted Request', path: '/upload' },
-  { label: 'Processing Status', path: '/processing' },
-  { label: 'Order Confirmation', path: '/order-confirmation' },
+  { label: 'AI Agent', path: '/ai-agent' },
+  { label: 'Configurator', path: '/configurator' },
+  { label: 'Upload Intake', path: '/upload' },
+  { label: 'Request Status', path: '/processing' },
+  { label: 'Order Draft', path: '/order-confirmation' },
 ];
 
 export const overviewMetrics = [

@@ -121,10 +121,31 @@ export type ConnectorDraftInput = {
   zone: ConnectorZone;
 };
 
+export type ConnectorCreateInput = {
+  family: string;
+  zone: ConnectorZone;
+};
+
+export type ConnectorUpdateInput = {
+  label: string;
+  pins: number;
+  options: string[];
+  awg: string;
+};
+
 export type MidElementDraftInput = {
   label: string;
   type: MidElementType;
   column: 1 | 2 | 3;
+};
+
+export type MidElementCreateInput = {
+  type: MidElementType;
+  column: 1 | 2 | 3;
+};
+
+export type MidElementUpdateInput = {
+  label: string;
 };
 
 export type WireConnectionInput = {
@@ -132,6 +153,13 @@ export type WireConnectionInput = {
   toNodeId: string;
   fromPin: string;
   toPin: string;
+  length: number;
+  wireType: string;
+  wireGauge: string;
+  wireColor: string;
+};
+
+export type WireUpdateInput = {
   length: number;
   wireType: string;
   wireGauge: string;

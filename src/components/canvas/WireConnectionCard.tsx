@@ -24,6 +24,9 @@ export function WireConnectionCard({
           {toLabel}:{wire.toPin}
         </strong>
       </div>
+      <span className="wire-card__meta">
+        {wire.length} mm | {wire.wireType} | {wire.wireGauge} | {wire.wireColor}
+      </span>
       <p>
         {wire.length} mm • {wire.wireType} • {wire.wireGauge} • {wire.wireColor}
       </p>

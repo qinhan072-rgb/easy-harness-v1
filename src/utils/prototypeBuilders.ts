@@ -20,9 +20,23 @@ type CanvasComponent = {
   hasConfiguredRight: boolean;
 };
 
+export type CanvasValidationReason = {
+  code:
+    | 'missing-left-connector'
+    | 'missing-right-connector'
+    | 'incomplete-connector-configuration'
+    | 'disconnected-element'
+    | 'invalid-path'
+    | 'occupied-pin'
+    | 'unsupported-structure';
+  title: string;
+  detail: string;
+};
+
 export type CanvasEvaluation = {
   status: CanvasReadiness;
   headline: string;
+  validationReasons: CanvasValidationReason[];
   issues: string[];
   assistedReviewReasons: string[];
   canSubmit: boolean;
@@ -31,6 +45,79 @@ export type CanvasEvaluation = {
 
 export function createEntityId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+export function createSampleValidCanvasDraft(): CanvasDraft {
+  const leftConnectorId = createEntityId('connector');
+  const midElementId = createEntityId('mid');
+  const rightConnectorId = createEntityId('connector');
+
+  return {
+    connectors: [
+      {
+        kind: 'connector',
+        id: leftConnectorId,
+        label: 'Left Deutsch DT 1',
+        family: 'Deutsch DT',
+        pins: 4,
+        options: ['sealed'],
+        awg: '20 AWG',
+        zone: 'left',
+        configurationState: 'configured',
+        missingFields: [],
+      },
+      {
+        kind: 'connector',
+        id: rightConnectorId,
+        label: 'Right M12 Circular 1',
+        family: 'M12 Circular',
+        pins: 4,
+        options: ['sensor side'],
+        awg: '20 AWG',
+        zone: 'right',
+        configurationState: 'configured',
+        missingFields: [],
+      },
+    ],
+    midElements: [
+      {
+        kind: 'mid-element',
+        id: midElementId,
+        label: 'Cable 1',
+        type: 'cable',
+        column: 2,
+        detail: midElementCatalog.cable.detail,
+        ports: midElementCatalog.cable.ports,
+        configurationState: 'configured',
+        missingFields: [],
+      },
+    ],
+    wires: [
+      {
+        id: createEntityId('wire'),
+        fromNodeId: leftConnectorId,
+        toNodeId: midElementId,
+        fromPin: 'P1',
+        toPin: 'IN',
+        length: 320,
+        wireType: 'TXL',
+        wireGauge: '20 AWG',
+        wireColor: 'Black',
+      },
+      {
+        id: createEntityId('wire'),
+        fromNodeId: midElementId,
+        toNodeId: rightConnectorId,
+        fromPin: 'OUT',
+        toPin: 'P1',
+        length: 280,
+        wireType: 'TXL',
+        wireGauge: '20 AWG',
+        wireColor: 'Blue',
+      },
+    ],
+    lastFeedback: 'Loaded sample canvas.',
+  };
 }
 
 export function isConnectorBlock(node: CanvasNode): node is ConnectorBlock {
@@ -96,6 +183,27 @@ export function getMidElementMissingFields(input: { label: string }) {
 
 function endpointKey(nodeId: string, pin: string) {
   return `${nodeId}:${pin}`;
+}
+
+function addValidationReason(
+  reasons: CanvasValidationReason[],
+  reason: CanvasValidationReason,
+) {
+  if (
+    reasons.some(
+      (existingReason) =>
+        existingReason.code === reason.code &&
+        existingReason.detail === reason.detail,
+    )
+  ) {
+    return;
+  }
+
+  reasons.push(reason);
+}
+
+function formatValidationReason(reason: CanvasValidationReason) {
+  return `${reason.title}: ${reason.detail}`;
 }
 
 function getAllNodes(draft: CanvasDraft) {
@@ -236,11 +344,11 @@ export function validateWireConnection(
   const toTrack = getNodeTrack(toNode);
 
   if (fromTrack === toTrack) {
-    return 'This connection does not move the harness path forward. Canvas V1 expects connections to advance from the left side toward the right side.';
+    return 'Invalid path: this connection does not move the harness path forward. The canvas expects connections to advance from the left side toward the right side.';
   }
 
   if (fromTrack > toTrack) {
-    return 'This connection runs backward. Canvas V1 only supports left-to-right harness paths.';
+    return 'Invalid path: this connection runs backward. The canvas only supports left-to-right harness paths.';
   }
 
   const fromPoints = getNodeConnectionPoints(fromNode);
@@ -262,11 +370,11 @@ export function validateWireConnection(
   );
 
   if (occupiedEndpoints.has(endpointKey(input.fromNodeId, input.fromPin))) {
-    return `The source point ${input.fromPin} on ${fromNode.label} is already committed to another wire.`;
+    return `Occupied pin: the source point ${input.fromPin} on ${fromNode.label} is already committed to another wire.`;
   }
 
   if (occupiedEndpoints.has(endpointKey(input.toNodeId, input.toPin))) {
-    return `The target point ${input.toPin} on ${toNode.label} is already committed to another wire.`;
+    return `Occupied pin: the target point ${input.toPin} on ${toNode.label} is already committed to another wire.`;
   }
 
   const duplicateConnection = draft.wires.some(
@@ -286,23 +394,39 @@ export function validateWireConnection(
 
 export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
   const totalBlocks = draft.connectors.length + draft.midElements.length;
-  const { adjacency } = getCanvasComponents(draft);
+  const { adjacency, components } = getCanvasComponents(draft);
   const validNodeIds = getValidHarnessNodeIds(draft);
-  const issues: string[] = [];
+  const validationReasons: CanvasValidationReason[] = [];
   const assistedReviewReasons: string[] = [];
+  const validComponents = components.filter(
+    (component) => component.hasConfiguredLeft && component.hasConfiguredRight,
+  );
 
   if (totalBlocks === 0 && draft.wires.length === 0) {
+    addValidationReason(validationReasons, {
+      code: 'missing-left-connector',
+      title: 'Missing left connector',
+      detail: 'Add a configured connector in the left zone to begin a structured harness path.',
+    });
+    addValidationReason(validationReasons, {
+      code: 'missing-right-connector',
+      title: 'Missing right connector',
+      detail: 'Add a configured connector in the right zone so the harness has a destination.',
+    });
+    addValidationReason(validationReasons, {
+      code: 'invalid-path',
+      title: 'Invalid path',
+      detail: 'Add wires that create one complete left-to-right harness path before submitting.',
+    });
+
     return {
       status: 'empty',
       headline:
-        'Your current setup is incomplete for order submission. Start with a configured connector on each side, or move this request to assisted review.',
-      issues: [
-        'Missing a connector on the left side.',
-        'Missing a connector on the right side.',
-        'A complete harness path has not been defined yet.',
-      ],
+        'Add the required connectors, elements, and wire path before submission.',
+      validationReasons,
+      issues: validationReasons.map(formatValidationReason),
       assistedReviewReasons: [
-        'This request may be better handled through assisted review if you already have reference files or need a family outside the Canvas V1 subset.',
+        'Continue with AI Agent or Upload Intake if the request already depends on reference files or exceeds the current canvas boundary.',
       ],
       canSubmit: false,
       quoteEstimate: buildQuoteEstimate(draft),
@@ -323,115 +447,192 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
   );
 
   if (configuredLeftConnectors.length === 0) {
-    issues.push('Missing a configured connector on the left side.');
+    addValidationReason(validationReasons, {
+      code: 'missing-left-connector',
+      title: 'Missing left connector',
+      detail: 'Add at least one configured left connector and connect it into the harness path.',
+    });
   }
 
   if (configuredRightConnectors.length === 0) {
-    issues.push('Missing a configured connector on the right side.');
+    addValidationReason(validationReasons, {
+      code: 'missing-right-connector',
+      title: 'Missing right connector',
+      detail: 'Add at least one configured right connector and connect it into the harness path.',
+    });
   }
 
   for (const connector of draft.connectors) {
     if (connector.configurationState === 'incomplete') {
-      issues.push(
-        `Connector ${connector.label} is not fully configured yet. ${connector.missingFields.join(
-          ' ',
-        )}`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'incomplete-connector-configuration',
+        title: 'Incomplete connector configuration',
+        detail: `${connector.label} still needs details. ${connector.missingFields.join(' ')}`,
+      });
       continue;
     }
 
     const connectionCount = adjacency.get(connector.id)?.length ?? 0;
 
     if (connectionCount === 0) {
-      issues.push(
-        `Connector ${connector.label} is not connected into the harness path yet.`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'invalid-path',
+        title: 'Invalid path',
+        detail: `${connector.label} is not connected into the harness path yet.`,
+      });
       continue;
     }
 
     if (!validNodeIds.has(connector.id)) {
-      issues.push(
-        `Connector ${connector.label} is not connected into a valid left-to-right harness path yet.`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'invalid-path',
+        title: 'Invalid path',
+        detail: `${connector.label} is not part of one complete left-to-right harness path yet.`,
+      });
     }
   }
 
   for (const midElement of draft.midElements) {
     if (midElement.configurationState === 'incomplete') {
-      issues.push(
-        `Mid element ${midElement.label} is not fully configured yet. ${midElement.missingFields.join(
-          ' ',
-        )}`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'disconnected-element',
+        title: 'Disconnected element',
+        detail: `${midElement.label} still needs details before it can sit inside a valid harness path. ${midElement.missingFields.join(' ')}`,
+      });
     }
   }
 
   if (draft.wires.length === 0) {
-    issues.push(
-      'Your current setup is incomplete for order submission. Add at least one wire connection.',
-    );
+    addValidationReason(validationReasons, {
+      code: 'invalid-path',
+      title: 'Invalid path',
+      detail: 'Add wire connections that create one complete left-to-right harness path.',
+    });
   }
 
   if (draft.wires.length > 0 && !hasConfiguredLeftToRightPath(draft)) {
-    issues.push(
-      'Your current setup is incomplete for order submission. Add a complete path from a configured left connector to a configured right connector.',
-    );
+    addValidationReason(validationReasons, {
+      code: 'invalid-path',
+      title: 'Invalid path',
+      detail: 'The current wiring does not create a complete path from a configured left connector to a configured right connector.',
+    });
   }
 
   for (const midElement of draft.midElements) {
     const connectionCount = adjacency.get(midElement.id)?.length ?? 0;
 
     if (connectionCount < 2) {
-      issues.push(
-        `This mid element is not connected into a valid harness path: ${midElement.label}.`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'disconnected-element',
+        title: 'Disconnected element',
+        detail: `${midElement.label} is not fully connected between the left and right sides of the harness path.`,
+      });
       continue;
     }
 
     if (!validNodeIds.has(midElement.id)) {
-      issues.push(
-        `This mid element is not connected into a valid harness path: ${midElement.label}.`,
-      );
+      addValidationReason(validationReasons, {
+        code: 'disconnected-element',
+        title: 'Disconnected element',
+        detail: `${midElement.label} is not part of one complete left-to-right harness path yet.`,
+      });
     }
   }
 
-  if (issues.some((issue) => issue.includes('configured connector'))) {
-    assistedReviewReasons.push(
-      'If the structure does not naturally resolve into a left-to-right harness path, this request may be better handled through assisted review.',
-    );
+  const validLeftConnectorCount = draft.connectors.filter(
+    (connector) => connector.zone === 'left' && validNodeIds.has(connector.id),
+  ).length;
+  const validRightConnectorCount = draft.connectors.filter(
+    (connector) => connector.zone === 'right' && validNodeIds.has(connector.id),
+  ).length;
+
+  if (validComponents.length > 1) {
+    addValidationReason(validationReasons, {
+      code: 'unsupported-structure',
+      title: 'Unsupported structure for canvas boundary',
+      detail: 'The canvas currently supports one orderable left-to-right harness path at a time.',
+    });
   }
 
-  if (issues.some((issue) => issue.includes('Connector'))) {
-    assistedReviewReasons.push(
-      'If your connector set cannot be cleanly resolved into one orderable harness path, move this request to Upload / Assisted Request.',
-    );
+  if (validLeftConnectorCount > 1 || validRightConnectorCount > 1) {
+    addValidationReason(validationReasons, {
+      code: 'unsupported-structure',
+      title: 'Unsupported structure for canvas boundary',
+      detail: 'The current structure includes multiple active endpoints on one side. Move this request into AI or Upload for assisted review.',
+    });
   }
 
-  if (issues.some((issue) => issue.includes('mid element'))) {
+  for (const node of getAllNodes(draft)) {
+    const connectionCount = adjacency.get(node.id)?.length ?? 0;
+
+    if (!validNodeIds.has(node.id)) {
+      continue;
+    }
+
+    if (isConnectorBlock(node) && connectionCount > 1) {
+      addValidationReason(validationReasons, {
+        code: 'unsupported-structure',
+        title: 'Unsupported structure for canvas boundary',
+        detail: `${node.label} branches into more than one connection. The canvas boundary only supports one clean path per connector.`,
+      });
+    }
+
+    if (isMidElementBlock(node) && connectionCount > 2) {
+      addValidationReason(validationReasons, {
+        code: 'unsupported-structure',
+        title: 'Unsupported structure for canvas boundary',
+        detail: `${node.label} branches into more than two connections. Continue with AI or Upload for non-standard routing.`,
+      });
+    }
+  }
+
+  const issues = validationReasons.map(formatValidationReason);
+
+  if (
+    validationReasons.some(
+      (reason) =>
+        reason.code === 'missing-left-connector' ||
+        reason.code === 'missing-right-connector' ||
+        reason.code === 'invalid-path',
+    )
+  ) {
     assistedReviewReasons.push(
-      'If your mid elements need branching, ambiguous routing, or off-canvas logic, use Upload / Assisted Request instead.',
+      'Continue with AI Agent or Upload Intake if the structure does not resolve into one clear left-to-right path.',
     );
   }
 
   if (
-    issues.some(
-      (issue) =>
-        issue.includes('not fully configured yet') ||
-        issue.includes('incomplete for order submission'),
+    validationReasons.some(
+      (reason) =>
+        reason.code === 'incomplete-connector-configuration' ||
+        reason.code === 'unsupported-structure',
     )
   ) {
     assistedReviewReasons.push(
-      'If key details are still unclear, submit for assisted review so references and assumptions can be reconciled outside the Canvas V1 boundary.',
+      'Continue with AI Agent or Upload Intake if the connector set extends beyond one structured harness path.',
     );
   }
 
-  const canSubmit = issues.length === 0;
+  if (validationReasons.some((reason) => reason.code === 'disconnected-element')) {
+    assistedReviewReasons.push(
+      'Continue with AI Agent or Upload Intake if the mid elements require branching, ambiguous routing, or off-canvas logic.',
+    );
+  }
+
+  if (validationReasons.length > 0) {
+    assistedReviewReasons.push(
+      'Continue with AI Agent or Upload Intake if key details still need interpretation outside the canvas boundary.',
+    );
+  }
+
+  const canSubmit = validationReasons.length === 0;
 
   return {
     status: canSubmit ? 'ready to submit' : 'partially configured',
     headline: canSubmit
-      ? 'Ready to submit. The current harness path fits within Configurator V1.'
-      : 'Your current setup is incomplete for order submission.',
+      ? 'Ready to submit. The current structure fits the canvas boundary.'
+      : 'Complete the remaining structured items before submission.',
+    validationReasons,
     issues,
     assistedReviewReasons: Array.from(new Set(assistedReviewReasons)),
     canSubmit,
@@ -446,7 +647,7 @@ export function buildLeadTimeLabel(preference: LeadTimePreference) {
     case 'flexible':
       return 'Flexible scheduling';
     default:
-      return 'Standard prototype lead time';
+      return 'Standard lead time';
   }
 }
 
@@ -479,10 +680,10 @@ export function createCanvasOrderDraft(draft: CanvasDraft): OrderDraft {
     id: createEntityId('order'),
     sourceType: 'canvas',
     sourceTitle: sourceTypeLabels.canvas,
-    summary: `Canvas draft built from ${draft.connectors.length} connector blocks, ${draft.midElements.length} mid elements, and ${draft.wires.length} wire connections.`,
-    harnessSummary: `Single V1 left-to-right harness path using ${connectorFamilies.join(', ')} with ${totalLength} mm of defined wire length.`,
+    summary: `Canvas-assisted request built from ${draft.connectors.length} connector blocks, ${draft.midElements.length} mid elements, and ${draft.wires.length} wire connections.`,
+    harnessSummary: `Structured left-to-right harness path using ${connectorFamilies.join(', ')} with ${totalLength} mm of defined wire length.`,
     quantity: 1,
-    leadTimePreference: 'Standard prototype lead time',
+    leadTimePreference: 'Standard lead time',
     keyItems: [
       `Connector families: ${connectorFamilies.join(', ') || 'TBD'}`,
       `Included connectors: ${draft.connectors.length}`,
@@ -496,17 +697,17 @@ export function createCanvasOrderDraft(draft: CanvasDraft): OrderDraft {
         : ['No mid elements included in this draft path.'],
     includedWires,
     knownAssumptions: [
-      'Canvas V1 supports a fixed left-to-right harness path only.',
-      'Connector families are limited to the current V1 subset.',
-      'Quote, lead time, and order packaging remain front-end placeholders.',
+      'The canvas path supports a fixed left-to-right harness structure only.',
+      'Connector families are limited to the current structured canvas subset.',
+      'AI handoff remains available if the request needs interpretation beyond the canvas boundary.',
     ],
     missingDetails: [
-      'Final connector part numbers and terminal finish are not captured in Canvas V1.',
-      'Reference files and manufacturing drawings are not attached to this canvas-only draft.',
+      'Final connector part numbers and terminal finish are not fully captured in the current canvas path.',
+      'Reference files and manufacturing drawings are not attached to this canvas-assisted draft.',
     ],
     priceEstimate: quoteEstimate,
     detailNote:
-      'Generated from the fixed-syntax canvas prototype. This is a front-end-only draft.',
+      'Prepared from the structured canvas path and ready for draft review.',
     status: 'draft',
   };
 }
@@ -528,10 +729,10 @@ export function createUploadOrderDraft(draft: UploadDraft): OrderDraft {
     sourceTitle: sourceTypeLabels.upload,
     summary:
       draft.description ||
-      `Uploaded request for ${draft.projectName || 'unnamed project'}.`,
+      `Upload-assisted request for ${draft.projectName || 'unnamed project'}.`,
     harnessSummary:
       draft.description ||
-      'Harness structure will be defined during assisted review from uploaded references and project notes.',
+      'Harness structure will be defined from uploaded references, AI-assisted interpretation, and project notes.',
     quantity: draft.quantity,
     leadTimePreference,
     keyItems: [
@@ -545,8 +746,8 @@ export function createUploadOrderDraft(draft: UploadDraft): OrderDraft {
     includedWires: ['Wire path, length, and color details will be resolved after review.'],
     knownAssumptions: [
       'Draft created from the upload form and placeholder attachments only.',
-      'Assisted review will define connectors, mid elements, and routing details.',
-      'Quote and lead time remain front-end placeholders in this prototype.',
+      'AI + human review will define connectors, mid elements, and routing details during early access.',
+      'Quotation and lead time remain subject to review.',
     ],
     missingDetails: [
       'Exact connector families and part numbers are not yet defined.',
@@ -554,7 +755,7 @@ export function createUploadOrderDraft(draft: UploadDraft): OrderDraft {
     ],
     priceEstimate: estimate,
     detailNote:
-      'Generated from the upload / assisted request form. This is a front-end-only draft.',
+      'Prepared from uploaded references and ready for assisted review.',
     status: 'draft',
   };
 }

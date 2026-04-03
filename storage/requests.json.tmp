@@ -1,0 +1,109 @@
+{
+  "requests": [
+    {
+      "id": "EH-20260402-63B6B1F8",
+      "source": "canvas",
+      "projectName": "Canvas Verification 20260402-123639",
+      "requestSummary": "Structured canvas verification request",
+      "quantity": 1,
+      "leadTimePreference": "standard",
+      "attachments": [],
+      "canvasSnapshot": {
+        "lastFeedback": "Loaded sample valid canvas for local verification.",
+        "connectors": [
+          {
+            "zone": "left",
+            "options": [
+              "sealed"
+            ],
+            "id": "canvas-left-20260402-123639",
+            "kind": "connector",
+            "pins": 4,
+            "label": "Left Deutsch DT 1",
+            "awg": "20 AWG",
+            "configurationState": "configured",
+            "missingFields": [],
+            "family": "Deutsch DT"
+          },
+          {
+            "zone": "right",
+            "options": [
+              "sensor side"
+            ],
+            "id": "canvas-right-20260402-123639",
+            "kind": "connector",
+            "pins": 4,
+            "label": "Right M12 Circular 1",
+            "awg": "20 AWG",
+            "configurationState": "configured",
+            "missingFields": [],
+            "family": "M12 Circular"
+          }
+        ],
+        "wires": [
+          {
+            "wireGauge": "20 AWG",
+            "toNodeId": "canvas-mid-20260402-123639",
+            "id": "wire-a-20260402-123639",
+            "toPin": "IN",
+            "wireColor": "Black",
+            "fromNodeId": "canvas-left-20260402-123639",
+            "wireType": "TXL",
+            "length": 320,
+            "fromPin": "P1"
+          },
+          {
+            "wireGauge": "20 AWG",
+            "toNodeId": "canvas-right-20260402-123639",
+            "id": "wire-b-20260402-123639",
+            "toPin": "P1",
+            "wireColor": "Blue",
+            "fromNodeId": "canvas-mid-20260402-123639",
+            "wireType": "TXL",
+            "length": 280,
+            "fromPin": "OUT"
+          }
+        ],
+        "midElements": [
+          {
+            "configurationState": "configured",
+            "id": "canvas-mid-20260402-123639",
+            "kind": "mid-element",
+            "label": "Cable 1",
+            "ports": [
+              "IN",
+              "OUT"
+            ],
+            "type": "cable",
+            "missingFields": [],
+            "detail": "Represent a bundled cable segment.",
+            "column": 2
+          }
+        ]
+      },
+      "knownConnectors": [
+        "Left Deutsch DT 1 | Deutsch DT | 4 pins | 20 AWG",
+        "Right M12 Circular 1 | M12 Circular | 4 pins | 20 AWG"
+      ],
+      "knownElements": [
+        "Cable 1 | Cable | column 2"
+      ],
+      "knownWires": [
+        "Left Deutsch DT 1:P1 -> Cable 1:IN | 320 mm | TXL | 20 AWG | Black",
+        "Cable 1:OUT -> Right M12 Circular 1:P1 | 280 mm | TXL | 20 AWG | Blue"
+      ],
+      "intendedUse": "Verification",
+      "environmentNotes": "Bench verification",
+      "assumptions": [
+        "Sample valid canvas for verification."
+      ],
+      "missingInfo": [
+        "No manufacturing drawing attached yet."
+      ],
+      "status": "new",
+      "internalNotes": "",
+      "createdAt": "2026-04-02T04:36:40.129Z",
+      "updatedAt": "2026-04-02T04:36:40.129Z"
+    }
+  ]
+}

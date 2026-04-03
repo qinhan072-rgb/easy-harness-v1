@@ -5,6 +5,9 @@ type CanvasLaneProps = {
   subtitle: string;
   emptyMessage: string;
   children: ReactNode;
+  addLabel: string;
+  onAddClick: () => void;
+  addPanel?: ReactNode;
 };
 
 export function CanvasLane({
@@ -12,6 +15,9 @@ export function CanvasLane({
   subtitle,
   emptyMessage,
   children,
+  addLabel,
+  onAddClick,
+  addPanel,
 }: CanvasLaneProps) {
   const hasChildren = Children.count(children) > 0;
 
@@ -27,6 +33,12 @@ export function CanvasLane({
         ) : (
           <div className="canvas-lane__empty">{emptyMessage}</div>
         )}
+      </div>
+      <div className="canvas-lane__footer">
+        <button type="button" className="canvas-add-button" onClick={onAddClick}>
+          + {addLabel}
+        </button>
+        {addPanel ? <div className="canvas-inline-picker">{addPanel}</div> : null}
       </div>
     </section>
   );

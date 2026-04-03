@@ -1,52 +1,51 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { orderStatusCopy } from '../data/mockOrderDrafts';
+import { Link, NavLink, Outlet } from 'react-router-dom';
+import { useRequestSession } from '../context/RequestSessionContext';
 import { navItems } from '../data/mockData';
-import { usePrototype } from '../context/PrototypeContext';
+import { requestSourceLabels, requestStatusMeta } from '../data/requestMeta';
 
 export function AppLayout() {
-  const { state } = usePrototype();
-  const currentDraftLabel = state.orderDraft
-    ? orderStatusCopy[state.orderDraft.status].label
-    : 'Not started';
+  const { activeRequest, isLoadingActiveRequest } = useRequestSession();
+  const currentRequestTitle = isLoadingActiveRequest
+    ? 'Loading request...'
+    : activeRequest
+      ? activeRequest.projectName
+      : 'No open request';
+  const currentRequestDetail = activeRequest
+    ? `${requestSourceLabels[activeRequest.source]} · ${requestStatusMeta[activeRequest.status].label}`
+    : 'Submit from AI, canvas, or upload.';
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-block">
-          <span className="eyebrow">Product Prototype</span>
-          <h1>Easy Harness V1</h1>
-          <p>
-            Front-end only workflow prototype for harness request intake,
-            configuration, and order confirmation.
-          </p>
-        </div>
-
-        <nav className="side-nav" aria-label="Primary">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                isActive ? 'nav-link is-active' : 'nav-link'
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="sidebar-summary">
-            <span className="eyebrow">Current flow</span>
-            <strong>
-              {state.orderDraft ? state.orderDraft.sourceTitle : 'No active draft'}
-            </strong>
-            <p>{currentDraftLabel}</p>
+      <header className="topbar">
+        <div className="topbar__inner">
+          <Link to="/" className="brand-block brand-block--inline">
+            <span className="eyebrow">Custom Harness Intake</span>
+            <strong>Easy Harness</strong>
+          </Link>
+          <nav className="top-nav" aria-label="Primary">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive ? 'nav-link nav-link--top is-active' : 'nav-link nav-link--top'
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="topbar__status">
+            <span className="topbar__status-label">Open request</span>
+            <strong>{currentRequestTitle}</strong>
+            <p>
+              {activeRequest
+                ? `${requestSourceLabels[activeRequest.source]} - ${requestStatusMeta[activeRequest.status].label}`
+                : 'AI Agent, Configurator Canvas, or Upload Intake'}
+            </p>
           </div>
-          <div className="status-pill status-pill--success">Mock data only</div>
-          <p>No backend calls are wired in this version.</p>
         </div>
-      </aside>
+      </header>
 
       <main className="content-area">
         <Outlet />

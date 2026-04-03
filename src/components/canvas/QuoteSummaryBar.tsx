@@ -7,7 +7,12 @@ type QuoteSummaryBarProps = {
   wireCount: number;
   quoteEstimate: string;
   disabled: boolean;
+  submitLabel?: string;
+  secondaryActionLabel?: string;
+  tertiaryActionLabel?: string;
   onSubmit: () => void;
+  onSecondaryAction?: () => void;
+  onTertiaryAction?: () => void;
 };
 
 export function QuoteSummaryBar({
@@ -17,7 +22,12 @@ export function QuoteSummaryBar({
   wireCount,
   quoteEstimate,
   disabled,
+  submitLabel = 'Submit Request',
+  secondaryActionLabel,
+  tertiaryActionLabel,
   onSubmit,
+  onSecondaryAction,
+  onTertiaryAction,
 }: QuoteSummaryBarProps) {
   return (
     <div className="quote-summary-bar">
@@ -39,13 +49,33 @@ export function QuoteSummaryBar({
           <strong>{wireCount}</strong>
         </div>
         <div className="quote-summary-item">
-          <span>Quote estimate</span>
+          <span>Quote range</span>
           <strong>{quoteEstimate}</strong>
         </div>
       </div>
-      <button type="button" className="button" disabled={disabled} onClick={onSubmit}>
-        Submit to Processing
-      </button>
+      <div className="quote-summary-actions">
+        {secondaryActionLabel && onSecondaryAction ? (
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={onSecondaryAction}
+          >
+            {secondaryActionLabel}
+          </button>
+        ) : null}
+        {tertiaryActionLabel && onTertiaryAction ? (
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={onTertiaryAction}
+          >
+            {tertiaryActionLabel}
+          </button>
+        ) : null}
+        <button type="button" className="button" disabled={disabled} onClick={onSubmit}>
+          {submitLabel}
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,31 @@
 import type { ConnectorBlock } from '../../types/prototype';
 
-export function ConnectorBlockCard({ connector }: { connector: ConnectorBlock }) {
+type ConnectorBlockCardProps = {
+  connector: ConnectorBlock;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onPinClick?: (pin: string) => void;
+  registerPinRef?: (pin: string, element: HTMLButtonElement | null) => void;
+  activePins?: string[];
+  occupiedPins?: string[];
+};
+
+export function ConnectorBlockCard({
+  connector,
+  isSelected = false,
+  onSelect,
+  onPinClick,
+  registerPinRef,
+  activePins = [],
+  occupiedPins = [],
+}: ConnectorBlockCardProps) {
+  const pins = Array.from({ length: connector.pins }, (_, index) => `P${index + 1}`);
+
   return (
-    <article className="canvas-block">
+    <article
+      className={`canvas-block${isSelected ? ' is-selected' : ''}`}
+      onClick={onSelect}
+    >
       <div className="canvas-block__header">
         <strong>{connector.label}</strong>
         <span
@@ -15,6 +38,9 @@ export function ConnectorBlockCard({ connector }: { connector: ConnectorBlock })
           {connector.configurationState}
         </span>
       </div>
+      <span className="canvas-block__meta">
+        {connector.family} | {connector.zone} zone
+      </span>
       <p>
         {connector.family} • {connector.zone} zone
       </p>
@@ -28,11 +54,30 @@ export function ConnectorBlockCard({ connector }: { connector: ConnectorBlock })
           <dd>{connector.awg}</dd>
         </div>
       </dl>
-      <div className="tag-list">
-        {connector.options.map((option) => (
-          <span key={option} className="tag">
-            {option}
-          </span>
+      {connector.options.length > 0 ? (
+        <div className="tag-list">
+          {connector.options.map((option) => (
+            <span key={option} className="tag">
+              {option}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <div className="pin-grid">
+        {pins.map((pin) => (
+          <button
+            key={pin}
+            type="button"
+            ref={(element) => registerPinRef?.(pin, element)}
+            className={`pin-button${activePins.includes(pin) ? ' is-active' : ''}`}
+            disabled={occupiedPins.includes(pin)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onPinClick?.(pin);
+            }}
+          >
+            {pin}
+          </button>
         ))}
       </div>
       {connector.missingFields.length > 0 ? (
