@@ -1,15 +1,68 @@
 import { Link, useParams } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
-import { StatusTimeline } from '../components/StatusTimeline';
+import { leadTimePreferenceOptions } from '../data/uploadDrafts';
 import { useRequestRecord } from '../hooks/useRequestRecord';
 import {
-  buildStatusTimeline,
   formatRequestTimestamp,
+  getPublicRequestStage,
   publicCanvasReviewStatuses,
   publicOrderDraftStatuses,
+  publicRequestStageMeta,
   requestSourceLabels,
-  requestStatusMeta,
 } from '../data/requestMeta';
+import type { UnifiedRequest } from '../types/request';
+
+const leadTimeLabels = Object.fromEntries(
+  leadTimePreferenceOptions.map((option) => [option.value, option.label]),
+) as Record<(typeof leadTimePreferenceOptions)[number]['value'], string>;
+
+function buildWhatHappensNow(request: UnifiedRequest) {
+  const publicStage = getPublicRequestStage(request.status);
+
+  if (publicStage === 'in-preparation' && request.status === 'needs-info') {
+    return 'We are reviewing the intake details and checking which points still need clarification.';
+  }
+
+  if (publicStage === 'submitted' && request.status === 'quoted') {
+    return 'The prepared draft has been accepted and quotation follow-through is underway.';
+  }
+
+  if (publicStage === 'submitted' && request.status === 'order-submitted') {
+    return 'The structured order has been received for payment and final handling.';
+  }
+
+  if (publicStage === 'submitted' && request.status === 'closed') {
+    return 'This request has reached the final submitted stage and is now closed.';
+  }
+
+  return publicRequestStageMeta[publicStage].currentDetail;
+}
+
+function buildNextStep(request: UnifiedRequest) {
+  const publicStage = getPublicRequestStage(request.status);
+
+  if (publicStage === 'in-preparation' && request.status === 'needs-info') {
+    return 'If one detail still needs confirmation, the team will contact you.';
+  }
+
+  if (publicStage === 'review-required' && request.source === 'canvas') {
+    return 'Review Order opens the structured order for final review before submission.';
+  }
+
+  if (publicStage === 'review-required') {
+    return 'Open Order Draft to review the prepared details and confirm the next action.';
+  }
+
+  if (publicStage === 'submitted' && request.status === 'quoted') {
+    return 'Quotation follow-through is underway.';
+  }
+
+  if (publicStage === 'submitted' && request.status === 'closed') {
+    return 'The request has been closed. Keep the request ID for reference.';
+  }
+
+  return publicRequestStageMeta[publicStage].nextStep;
+}
 
 export function ProcessingStatusPage() {
   const params = useParams<{ requestId: string }>();
@@ -21,7 +74,7 @@ export function ProcessingStatusPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Request Status"
+          title="Track Request"
           description="Loading your request."
           badge="Loading"
         />
@@ -38,7 +91,7 @@ export function ProcessingStatusPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Request Status"
+          title="Track Request"
           description="We could not load this request."
           badge="Unavailable"
         />
@@ -58,7 +111,7 @@ export function ProcessingStatusPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Request Status"
+          title="Track Request"
           description="Available after a request has been submitted."
           badge="Waiting"
         />
@@ -75,170 +128,104 @@ export function ProcessingStatusPage() {
     );
   }
 
-  const statusMeta = requestStatusMeta[request.status];
-  const sourceLabel = requestSourceLabels[request.source];
-  const pageDescription =
-    request.status === 'order-submitted'
-      ? 'Follow the next order step after structured order submission.'
-      : 'Track intake progress as the request moves toward draft preparation and quotation.';
-  const nextStepMessage =
-    request.status === 'draft-ready' || request.status === 'awaiting-confirmation'
-      ? 'The draft is ready for customer review.'
-      : request.status === 'order-submitted'
-        ? 'Order received. Payment and final handling are next. The team may contact you if one final detail still needs confirmation.'
-      : request.status === 'quoted'
-        ? 'Draft confirmation has been received and quotation handling is underway.'
-        : request.status === 'needs-info'
-          ? 'Additional details are required before draft preparation can continue.'
-          : 'The request is being organized for draft preparation.';
+  const publicStage = getPublicRequestStage(request.status);
+  const stageMeta = publicRequestStageMeta[publicStage];
   const reviewPath =
-    request.source === 'canvas'
-      ? publicCanvasReviewStatuses.has(request.status)
-        ? `/review-order/${request.id}`
-        : null
-      : publicOrderDraftStatuses.has(request.status)
-        ? `/order-confirmation/${request.id}`
-        : null;
+    publicStage === 'review-required'
+      ? request.source === 'canvas'
+        ? publicCanvasReviewStatuses.has(request.status)
+          ? `/review-order/${request.id}`
+          : null
+        : publicOrderDraftStatuses.has(request.status)
+          ? `/order-confirmation/${request.id}`
+          : null
+      : null;
   const reviewLabel =
-    request.source === 'canvas'
-      ? request.status === 'order-submitted'
-        ? 'View Order Summary'
-        : 'Review Order'
-      : request.status === 'draft-ready' || request.status === 'awaiting-confirmation'
-        ? 'Review Order Draft'
-        : 'View Order Draft';
+    request.source === 'canvas' ? 'Review Order' : 'Open Order Draft';
 
   return (
     <div className="page-stack">
       <PageHeader
-        title="Request Status"
-        description={pageDescription}
-        badge={statusMeta.label}
+        title="Track Request"
+        description="Check the current stage of your request and whether any action is needed."
+        badge={stageMeta.label}
       />
 
       <section className="panel processing-hero">
         <div>
-          <span className="eyebrow">Request record</span>
-          <h3>{request.projectName}</h3>
-          <p>{request.requestSummary}</p>
+          <span className="eyebrow">Current stage</span>
+          <h3>{stageMeta.label}</h3>
+          <p>{stageMeta.currentState}</p>
         </div>
         <div className="processing-hero__meta">
-          <strong>{statusMeta.label}</strong>
-          <span>{sourceLabel}</span>
-          <span>{request.id}</span>
+          <strong>{stageMeta.label}</strong>
+          <span>{requestSourceLabels[request.source]}</span>
+          <span>Updated {formatRequestTimestamp(request.updatedAt)}</span>
         </div>
       </section>
 
-      <div className="info-banner info-banner--subtle">
-        {request.status === 'order-submitted'
-          ? 'Order submission has been recorded. Payment and final handling are next.'
-          : 'Status updates appear here as the request moves through intake, draft preparation, and confirmation.'}
-      </div>
-
-      <section className="panel-grid panel-grid--2">
-        <article className="panel">
-          <div className="panel-heading">
-            <h3>Status Timeline</h3>
-            <p>Follow the current stage of your request.</p>
+      <section className="panel">
+        <div className="panel-heading">
+          <h3>Current Request</h3>
+          <p>Key request details.</p>
+        </div>
+        <div className="summary-grid">
+          <div className="summary-card">
+            <span>Request ID</span>
+            <strong>{request.id}</strong>
           </div>
-          <StatusTimeline items={buildStatusTimeline(request.status)} />
-        </article>
-
-        <article className="panel">
-          <div className="panel-heading">
-            <h3>Request Snapshot</h3>
-            <p>Key request details.</p>
+          <div className="summary-card">
+            <span>Project</span>
+            <strong>{request.projectName}</strong>
           </div>
-          <div className="summary-grid">
-            <div className="summary-card">
-              <span>Quantity</span>
-              <strong>{request.quantity}</strong>
-            </div>
-            <div className="summary-card">
-              <span>Lead time</span>
-              <strong>{request.leadTimePreference}</strong>
-            </div>
-            <div className="summary-card">
-              <span>Attachments</span>
-              <strong>{request.attachments.length}</strong>
-            </div>
-            <div className="summary-card">
-              <span>Created</span>
-              <strong>{formatRequestTimestamp(request.createdAt)}</strong>
-            </div>
+          <div className="summary-card">
+            <span>Source</span>
+            <strong>{requestSourceLabels[request.source]}</strong>
           </div>
-          <ul className="simple-list">
-            <li>Known connectors: {request.knownConnectors.length}</li>
-            <li>Known elements: {request.knownElements.length}</li>
-            <li>Known wires: {request.knownWires.length}</li>
-            <li>Missing info items: {request.missingInfo.length}</li>
-          </ul>
-        </article>
+          <div className="summary-card">
+            <span>Quantity</span>
+            <strong>{request.quantity}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Requested lead time</span>
+            <strong>{leadTimeLabels[request.leadTimePreference]}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Attachments</span>
+            <strong>{request.attachments.length}</strong>
+          </div>
+        </div>
       </section>
 
       <section className="panel-grid panel-grid--2">
         <article className="panel">
           <div className="panel-heading">
-            <h3>Notes And Intent</h3>
-            <p>Application details saved with the intake record.</p>
-          </div>
-          <div className="draft-copy-group">
-            <div>
-              <span className="eyebrow">Intended use</span>
-              <p>{request.intendedUse || 'Not specified yet.'}</p>
-            </div>
-            <div>
-              <span className="eyebrow">Environment notes</span>
-              <p>{request.environmentNotes || 'No environment notes yet.'}</p>
-            </div>
+            <h3>What Happens Now</h3>
+            <p>{buildWhatHappensNow(request)}</p>
           </div>
         </article>
 
         <article className="panel">
           <div className="panel-heading">
             <h3>Next Step</h3>
-            <p>{nextStepMessage}</p>
-          </div>
-          <div className="action-row">
-            {reviewPath ? (
-              <Link to={reviewPath} className="button">
-                {reviewLabel}
-              </Link>
-            ) : null}
-            <Link to="/" className="button button-secondary">
-              Back to Home
-            </Link>
+            <p>{buildNextStep(request)}</p>
           </div>
         </article>
       </section>
 
-      <section className="panel">
-        <div className="panel-heading">
-          <h3>Attachments</h3>
-          <p>Files included with this request.</p>
-        </div>
-        {request.attachments.length === 0 ? (
-          <div className="empty-state">
-            <strong>No attachments uploaded yet.</strong>
-            <p>This request can still move forward with review and follow-up.</p>
+      {reviewPath ? (
+        <section className="panel">
+          <div className="panel-heading">
+            <h3>Action Required</h3>
+            <p>Please review the prepared order details before the request moves forward.</p>
           </div>
-        ) : (
-          <div className="attachment-list">
-            {request.attachments.map((attachment) => (
-              <a
-                key={attachment.id}
-                className="attachment-row request-attachment-link"
-                href={attachment.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span>{attachment.originalName}</span>
-                <span>{Math.round(attachment.sizeBytes / 1024)} KB</span>
-              </a>
-            ))}
+          <div className="action-row">
+            <Link to={reviewPath} className="button">
+              {reviewLabel}
+            </Link>
           </div>
-        )}
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 }

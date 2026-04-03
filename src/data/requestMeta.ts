@@ -1,5 +1,11 @@
 import type { RequestSource, RequestStatus } from '../types/request';
 
+export type PublicRequestStage =
+  | 'request-received'
+  | 'in-preparation'
+  | 'review-required'
+  | 'submitted';
+
 export const requestSourceLabels: Record<RequestSource, string> = {
   ai: 'AI Agent',
   canvas: 'Configurator Canvas',
@@ -68,6 +74,65 @@ export const publicCanvasReviewStatuses = new Set<RequestStatus>([
   'draft-ready',
   'order-submitted',
 ]);
+
+export const publicRequestStageMeta: Record<
+  PublicRequestStage,
+  {
+    label: string;
+    currentState: string;
+    currentDetail: string;
+    nextStep: string;
+  }
+> = {
+  'request-received': {
+    label: 'Request received',
+    currentState: 'Your request has been received.',
+    currentDetail:
+      'The team is checking the intake details and preparing the next step.',
+    nextStep:
+      'The request will move into preparation after the intake record is checked.',
+  },
+  'in-preparation': {
+    label: 'In preparation',
+    currentState: 'Your request is being prepared.',
+    currentDetail:
+      'We are reviewing the intake details and organizing the request for draft preparation.',
+    nextStep:
+      'A prepared draft will become available when the request is ready for review.',
+  },
+  'review-required': {
+    label: 'Review required',
+    currentState: 'Your draft is ready for review.',
+    currentDetail:
+      'Please review the prepared order details before the request moves forward.',
+    nextStep:
+      'Open the prepared draft and confirm the next action when you are ready.',
+  },
+  submitted: {
+    label: 'Submitted',
+    currentState: 'Your order has moved forward.',
+    currentDetail: 'The request is now in the submitted stage.',
+    nextStep:
+      'Payment and final handling are next. The team may contact you if one final detail still needs confirmation.',
+  },
+};
+
+export function getPublicRequestStage(status: RequestStatus): PublicRequestStage {
+  switch (status) {
+    case 'new':
+      return 'request-received';
+    case 'needs-info':
+    case 'draft-in-progress':
+      return 'in-preparation';
+    case 'draft-ready':
+    case 'awaiting-confirmation':
+      return 'review-required';
+    case 'quoted':
+    case 'order-submitted':
+    case 'closed':
+      return 'submitted';
+  }
+}
 
 const statusOrder: RequestStatus[] = [
   'new',

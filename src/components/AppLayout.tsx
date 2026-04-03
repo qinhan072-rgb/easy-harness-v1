@@ -1,8 +1,10 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useRequestSession } from '../context/RequestSessionContext';
 import {
+  getPublicRequestStage,
   publicCanvasReviewStatuses,
   publicOrderDraftStatuses,
+  publicRequestStageMeta,
   requestSourceLabels,
   requestStatusMeta,
 } from '../data/requestMeta';
@@ -20,7 +22,7 @@ export function AppLayout() {
     { label: 'Configurator', path: '/configurator' },
     { label: 'Upload Intake', path: '/upload' },
     {
-      label: 'Request Status',
+      label: 'Track Request',
       path: activeRequest ? `/processing/${activeRequest.id}` : '/processing',
     },
   ];
@@ -36,6 +38,9 @@ export function AppLayout() {
   const visibleNavItems = reviewNavItem
     ? [...primaryNavItems, reviewNavItem]
     : primaryNavItems;
+  const currentPublicStage = activeRequest
+    ? publicRequestStageMeta[getPublicRequestStage(activeRequest.status)].label
+    : null;
   const currentRequestDetail = activeRequest
     ? `${requestSourceLabels[activeRequest.source]} · ${requestStatusMeta[activeRequest.status].label}`
     : 'Submit from AI, canvas, or upload.';
@@ -66,7 +71,7 @@ export function AppLayout() {
             <strong>{currentRequestTitle}</strong>
             <p>
               {activeRequest
-                ? `${requestSourceLabels[activeRequest.source]} - ${requestStatusMeta[activeRequest.status].label}`
+                ? `${requestSourceLabels[activeRequest.source]} - ${currentPublicStage}`
                 : 'AI Agent, Configurator Canvas, or Upload Intake'}
             </p>
           </div>
