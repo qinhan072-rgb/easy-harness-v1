@@ -4,14 +4,12 @@ import { AppLayout } from './components/AppLayout';
 import { OpsLayout } from './components/OpsLayout';
 import { RequireOpsAccess } from './components/RequireOpsAccess';
 import { ConfiguratorCanvasPage } from './pages/ConfiguratorCanvasPage';
+import { GeneratedPreviewPage } from './pages/GeneratedPreviewPage';
 import { HomePage } from './pages/HomePage';
 import { OpsEntryPage } from './pages/OpsEntryPage';
-import { OrderConfirmationPage } from './pages/OrderConfirmationPage';
 import { ProcessingStatusPage } from './pages/ProcessingStatusPage';
-import { ReviewOrderPage } from './pages/ReviewOrderPage';
 import { RequestDetailPage } from './pages/RequestDetailPage';
 import { RequestInboxPage } from './pages/RequestInboxPage';
-import { UploadRequestPage } from './pages/UploadRequestPage';
 
 function App() {
   return (
@@ -20,17 +18,15 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/ai-agent" element={<AIAgentPage />} />
         <Route path="/configurator" element={<ConfiguratorCanvasPage />} />
-        <Route path="/upload" element={<UploadRequestPage />} />
+        <Route path="/upload" element={<Navigate to="/ai-agent" replace />} />
         <Route path="/processing" element={<ProcessingStatusPage />} />
         <Route path="/processing/:requestId" element={<ProcessingStatusPage />} />
-        <Route path="/review-order/:requestId" element={<ReviewOrderPage />} />
-        <Route
-          path="/order-confirmation"
-          element={<OrderConfirmationPage />}
-        />
+        <Route path="/preview/:requestId" element={<GeneratedPreviewPage />} />
+        <Route path="/review-order/:requestId" element={<GeneratedPreviewPage />} />
+        <Route path="/order-confirmation" element={<Navigate to="/processing" replace />} />
         <Route
           path="/order-confirmation/:requestId"
-          element={<OrderConfirmationPage />}
+          element={<GeneratedPreviewPage />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

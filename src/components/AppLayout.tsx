@@ -2,8 +2,8 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useRequestSession } from '../context/RequestSessionContext';
 import {
   getPublicRequestStage,
-  publicCanvasReviewStatuses,
-  publicOrderDraftStatuses,
+  publicPreviewStatuses,
+  publicRequestSourceLabels,
   publicRequestStageMeta,
   requestSourceLabels,
   requestStatusMeta,
@@ -20,20 +20,15 @@ export function AppLayout() {
     { label: 'Home', path: '/' },
     { label: 'AI Agent', path: '/ai-agent' },
     { label: 'Configurator', path: '/configurator' },
-    { label: 'Upload Intake', path: '/upload' },
     {
       label: 'Track Request',
       path: activeRequest ? `/processing/${activeRequest.id}` : '/processing',
     },
   ];
   const reviewNavItem = activeRequest
-    ? activeRequest.source === 'canvas'
-      ? publicCanvasReviewStatuses.has(activeRequest.status)
-        ? { label: 'Review Order', path: `/review-order/${activeRequest.id}` }
-        : null
-      : publicOrderDraftStatuses.has(activeRequest.status)
-        ? { label: 'Order Draft', path: `/order-confirmation/${activeRequest.id}` }
-        : null
+    ? publicPreviewStatuses.has(activeRequest.status)
+      ? { label: 'Harness Preview', path: `/preview/${activeRequest.id}` }
+      : null
     : null;
   const visibleNavItems = reviewNavItem
     ? [...primaryNavItems, reviewNavItem]
@@ -71,8 +66,8 @@ export function AppLayout() {
             <strong>{currentRequestTitle}</strong>
             <p>
               {activeRequest
-                ? `${requestSourceLabels[activeRequest.source]} - ${currentPublicStage}`
-                : 'AI Agent, Configurator Canvas, or Upload Intake'}
+                ? `${publicRequestSourceLabels[activeRequest.source]} - ${currentPublicStage}`
+                : 'AI Agent or Configurator'}
             </p>
           </div>
         </div>

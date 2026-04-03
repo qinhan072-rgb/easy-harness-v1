@@ -8,8 +8,14 @@ export type PublicRequestStage =
 
 export const requestSourceLabels: Record<RequestSource, string> = {
   ai: 'AI Agent',
-  canvas: 'Configurator Canvas',
+  canvas: 'Configurator',
   upload: 'Upload Intake',
+};
+
+export const publicRequestSourceLabels: Record<RequestSource, string> = {
+  ai: 'AI Agent',
+  canvas: 'Configurator',
+  upload: 'AI Agent files',
 };
 
 export const requestStatusMeta: Record<
@@ -73,6 +79,14 @@ export const publicOrderDraftStatuses = new Set<RequestStatus>([
 export const publicCanvasReviewStatuses = new Set<RequestStatus>([
   'draft-ready',
   'order-submitted',
+]);
+
+export const publicPreviewStatuses = new Set<RequestStatus>([
+  'draft-ready',
+  'awaiting-confirmation',
+  'quoted',
+  'order-submitted',
+  'closed',
 ]);
 
 export const publicRequestStageMeta: Record<
