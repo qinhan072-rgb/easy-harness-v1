@@ -5,6 +5,8 @@ import { useRequestRecord } from '../hooks/useRequestRecord';
 import {
   buildStatusTimeline,
   formatRequestTimestamp,
+  publicCanvasReviewStatuses,
+  publicOrderDraftStatuses,
   requestSourceLabels,
   requestStatusMeta,
 } from '../data/requestMeta';
@@ -91,10 +93,10 @@ export function ProcessingStatusPage() {
           : 'The request is being organized for draft preparation.';
   const reviewPath =
     request.source === 'canvas'
-      ? request.status === 'draft-ready' || request.status === 'order-submitted'
+      ? publicCanvasReviewStatuses.has(request.status)
         ? `/review-order/${request.id}`
         : null
-      : request.status === 'draft-ready' || request.status === 'awaiting-confirmation'
+      : publicOrderDraftStatuses.has(request.status)
         ? `/order-confirmation/${request.id}`
         : null;
   const reviewLabel =
@@ -102,7 +104,9 @@ export function ProcessingStatusPage() {
       ? request.status === 'order-submitted'
         ? 'View Order Summary'
         : 'Review Order'
-      : 'Review Order Draft';
+      : request.status === 'draft-ready' || request.status === 'awaiting-confirmation'
+        ? 'Review Order Draft'
+        : 'View Order Draft';
 
   return (
     <div className="page-stack">

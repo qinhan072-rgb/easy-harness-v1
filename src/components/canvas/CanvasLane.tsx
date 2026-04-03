@@ -8,6 +8,7 @@ type CanvasLaneProps = {
   addLabel: string;
   onAddClick: () => void;
   addPanel?: ReactNode;
+  showHeader?: boolean;
 };
 
 export function CanvasLane({
@@ -18,15 +19,18 @@ export function CanvasLane({
   addLabel,
   onAddClick,
   addPanel,
+  showHeader = true,
 }: CanvasLaneProps) {
   const hasChildren = Children.count(children) > 0;
 
   return (
     <section className="canvas-lane">
-      <div className="canvas-lane__header">
-        <strong>{title}</strong>
-        <span>{subtitle}</span>
-      </div>
+      {showHeader ? (
+        <div className="canvas-lane__header">
+          <strong>{title}</strong>
+          <span>{subtitle}</span>
+        </div>
+      ) : null}
       <div className="canvas-lane__body">
         {hasChildren ? (
           children

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { useRequestSession } from '../context/RequestSessionContext';
 import {
   draftReadyStatuses,
+  publicOrderDraftStatuses,
   requestSourceLabels,
   requestStatusMeta,
 } from '../data/requestMeta';
@@ -105,36 +106,25 @@ export function OrderConfirmationPage() {
     );
   }
 
-  const statusMeta = requestStatusMeta[request.status];
-
-  if (!draftReadyStatuses.has(request.status)) {
+  if (request.source === 'canvas') {
     return (
-      <div className="page-stack">
-      <PageHeader
-        title="Order Draft"
-        description="Draft review becomes available after draft preparation is complete."
-        badge={statusMeta.label}
+      <Navigate
+        to={
+          request.status === 'draft-ready' || request.status === 'order-submitted'
+            ? `/review-order/${request.id}`
+            : `/processing/${request.id}`
+        }
+        replace
       />
-        <section className="panel">
-          <div className="empty-state">
-            <strong>{request.projectName} is still moving through intake review.</strong>
-            <p>
-              Source: {requestSourceLabels[request.source]}. Return when the request
-              reaches Draft ready or Awaiting confirmation.
-            </p>
-            <div className="action-row">
-              <Link to={`/processing/${request.id}`} className="button">
-                View Request Status
-              </Link>
-              <Link to="/" className="button button-secondary">
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        </section>
-      </div>
     );
   }
+
+  if (!publicOrderDraftStatuses.has(request.status)) {
+    return <Navigate to={`/processing/${request.id}`} replace />;
+  }
+
+  const statusMeta = requestStatusMeta[request.status];
+  const canRespondToDraft = draftReadyStatuses.has(request.status);
 
   const draftSummary = request.draftSummary || request.requestSummary;
   const shouldShowManufacturableNotes = Boolean(request.manufacturableNotes);
@@ -143,12 +133,18 @@ export function OrderConfirmationPage() {
     <div className="page-stack">
       <PageHeader
         title="Order Draft"
-        description="Review the prepared draft before confirmation and quotation handling."
+        description={
+          canRespondToDraft
+            ? 'Review the prepared draft before confirmation and quotation handling.'
+            : 'Prepared draft details are available here for reference.'
+        }
         badge={statusMeta.label}
       />
 
       <div className="info-banner info-banner--subtle">
-        Review the prepared draft, assumptions, missing details, and quotation note before responding.
+        {canRespondToDraft
+          ? 'Review the prepared draft, assumptions, missing details, and quotation note before responding.'
+          : 'Prepared draft details remain available here while the request moves through the next stage.'}
       </div>
 
       <section className="panel-grid panel-grid--2">
@@ -239,59 +235,6 @@ export function OrderConfirmationPage() {
         </article>
       </section>
 
-      {request.source === 'canvas' ? (
-        <>
-        <section className="panel">
-        <div className="panel-heading">
-          <h3>Connector List</h3>
-          <p>Structured connector details captured with the request.</p>
-        </div>
-        <ul className="simple-list">
-          {request.knownConnectors.length === 0 ? (
-            <li>No connector details have been recorded yet.</li>
-          ) : (
-            request.knownConnectors.map((item) => (
-              <li key={item}>{item.replace(/[^\x20-\x7E]+/g, ' - ')}</li>
-            ))
-          )}
-        </ul>
-        </section>
-
-        <section className="panel">
-        <div className="panel-heading">
-          <h3>Elements and Wires</h3>
-          <p>Structured items currently included in the draft.</p>
-        </div>
-        <div className="panel-grid panel-grid--2">
-          <div className="sub-panel">
-            <span className="eyebrow">Elements</span>
-            <ul className="simple-list">
-              {request.knownElements.length === 0 ? (
-                <li>No element details have been recorded yet.</li>
-              ) : (
-                request.knownElements.map((item) => (
-                  <li key={item}>{item.replace(/[^\x20-\x7E]+/g, ' - ')}</li>
-                ))
-              )}
-            </ul>
-          </div>
-          <div className="sub-panel">
-            <span className="eyebrow">Wires</span>
-            <ul className="simple-list">
-              {request.knownWires.length === 0 ? (
-                <li>No wire details have been recorded yet.</li>
-              ) : (
-                request.knownWires.map((item) => (
-                  <li key={item}>{item.replace(/[^\x20-\x7E]+/g, ' - ')}</li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div>
-        </section>
-        </>
-      ) : null}
-
       <section className="panel-grid panel-grid--2">
         <article className="panel">
           <div className="panel-heading">
@@ -324,29 +267,37 @@ export function OrderConfirmationPage() {
 
       <section className="panel">
         <div className="panel-heading">
-          <h3>Customer Response</h3>
-          <p>Confirm the draft to move forward, or request changes if details need adjustment.</p>
+          <h3>{canRespondToDraft ? 'Customer Response' : 'Next Step'}</h3>
+          <p>
+            {canRespondToDraft
+              ? 'Confirm the draft to move forward, or request changes if details need adjustment.'
+              : 'Return to request status for the latest handling update.'}
+          </p>
         </div>
         {actionError ? (
           <div className="info-banner info-banner--error">{actionError}</div>
         ) : null}
         <div className="action-row">
-          <button
-            type="button"
-            className="button"
-            disabled={isSubmittingAction}
-            onClick={() => void handleDraftAction('quoted')}
-          >
-            {isSubmittingAction ? 'Saving...' : 'Confirm Draft'}
-          </button>
-          <button
-            type="button"
-            className="button button-secondary"
-            disabled={isSubmittingAction}
-            onClick={() => void handleDraftAction('needs-info')}
-          >
-            Request Changes
-          </button>
+          {canRespondToDraft ? (
+            <>
+              <button
+                type="button"
+                className="button"
+                disabled={isSubmittingAction}
+                onClick={() => void handleDraftAction('quoted')}
+              >
+                {isSubmittingAction ? 'Saving...' : 'Confirm Draft'}
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                disabled={isSubmittingAction}
+                onClick={() => void handleDraftAction('needs-info')}
+              >
+                Request Changes
+              </button>
+            </>
+          ) : null}
           <Link to={`/processing/${request.id}`} className="button button-ghost">
             Back to Request Status
           </Link>

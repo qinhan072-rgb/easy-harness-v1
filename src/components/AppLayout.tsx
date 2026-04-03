@@ -1,7 +1,11 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useRequestSession } from '../context/RequestSessionContext';
-import { navItems } from '../data/mockData';
-import { requestSourceLabels, requestStatusMeta } from '../data/requestMeta';
+import {
+  publicCanvasReviewStatuses,
+  publicOrderDraftStatuses,
+  requestSourceLabels,
+  requestStatusMeta,
+} from '../data/requestMeta';
 
 export function AppLayout() {
   const { activeRequest, isLoadingActiveRequest } = useRequestSession();
@@ -10,6 +14,28 @@ export function AppLayout() {
     : activeRequest
       ? activeRequest.projectName
       : 'No open request';
+  const primaryNavItems = [
+    { label: 'Home', path: '/' },
+    { label: 'AI Agent', path: '/ai-agent' },
+    { label: 'Configurator', path: '/configurator' },
+    { label: 'Upload Intake', path: '/upload' },
+    {
+      label: 'Request Status',
+      path: activeRequest ? `/processing/${activeRequest.id}` : '/processing',
+    },
+  ];
+  const reviewNavItem = activeRequest
+    ? activeRequest.source === 'canvas'
+      ? publicCanvasReviewStatuses.has(activeRequest.status)
+        ? { label: 'Review Order', path: `/review-order/${activeRequest.id}` }
+        : null
+      : publicOrderDraftStatuses.has(activeRequest.status)
+        ? { label: 'Order Draft', path: `/order-confirmation/${activeRequest.id}` }
+        : null
+    : null;
+  const visibleNavItems = reviewNavItem
+    ? [...primaryNavItems, reviewNavItem]
+    : primaryNavItems;
   const currentRequestDetail = activeRequest
     ? `${requestSourceLabels[activeRequest.source]} · ${requestStatusMeta[activeRequest.status].label}`
     : 'Submit from AI, canvas, or upload.';
@@ -23,7 +49,7 @@ export function AppLayout() {
             <strong>Easy Harness</strong>
           </Link>
           <nav className="top-nav" aria-label="Primary">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

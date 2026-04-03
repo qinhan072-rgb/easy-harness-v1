@@ -56,6 +56,19 @@ export const draftReadyStatuses = new Set<RequestStatus>([
   'awaiting-confirmation',
 ]);
 
+export const publicOrderDraftStatuses = new Set<RequestStatus>([
+  'draft-ready',
+  'awaiting-confirmation',
+  'quoted',
+  'order-submitted',
+  'closed',
+]);
+
+export const publicCanvasReviewStatuses = new Set<RequestStatus>([
+  'draft-ready',
+  'order-submitted',
+]);
+
 const statusOrder: RequestStatus[] = [
   'new',
   'needs-info',

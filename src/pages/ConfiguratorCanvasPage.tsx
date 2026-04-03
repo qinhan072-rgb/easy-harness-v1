@@ -755,58 +755,82 @@ export function ConfiguratorCanvasPage() {
           </div>
         </div>
 
-        <div className="canvas-grid-shell" ref={canvasGridRef}>
-          {wireRenderPaths.length > 0 ? (
-            <svg className="canvas-wire-overlay" aria-label="Harness routing preview">
-              {wireRenderPaths.map((wirePath) => (
-                <g
-                  key={wirePath.id}
-                  className={`canvas-wire-overlay__group${
-                    editingWireId === wirePath.id ? ' is-active' : ''
-                  }`}
-                >
-                  <path className="canvas-wire-overlay__shadow" d={wirePath.path} />
-                  <path
-                    className="canvas-wire-overlay__hit"
-                    d={wirePath.path}
-                    onClick={() => handleEditWire(wirePath.id)}
-                  />
-                  <path
-                    className="canvas-wire-overlay__path"
-                    d={wirePath.path}
-                    style={{ stroke: wirePath.stroke }}
-                  />
-                  <circle
-                    className="canvas-wire-overlay__node"
-                    cx={wirePath.startX}
-                    cy={wirePath.startY}
-                    r="4"
-                  />
-                  <circle
-                    className="canvas-wire-overlay__node"
-                    cx={wirePath.endX}
-                    cy={wirePath.endY}
-                    r="4"
-                  />
-                  <circle
-                    className="canvas-wire-overlay__handle-ring"
-                    cx={wirePath.midX}
-                    cy={wirePath.midY}
-                    r="9"
-                    onClick={() => handleEditWire(wirePath.id)}
-                  />
-                  <circle
-                    className="canvas-wire-overlay__handle"
-                    cx={wirePath.midX}
-                    cy={wirePath.midY}
-                    r="5"
-                    onClick={() => handleEditWire(wirePath.id)}
-                  />
-                </g>
-              ))}
-            </svg>
-          ) : null}
-          <div className="canvas-grid">
+        <div className="canvas-grid-shell">
+          <div className="canvas-grid-headers" aria-hidden="true">
+            <div className="canvas-grid-header">
+              <strong>Source</strong>
+              <span>Left connector zone</span>
+            </div>
+            <div className="canvas-grid-header">
+              <strong>Column 1</strong>
+              <span>Structured slot</span>
+            </div>
+            <div className="canvas-grid-header">
+              <strong>Column 2</strong>
+              <span>Structured slot</span>
+            </div>
+            <div className="canvas-grid-header">
+              <strong>Column 3</strong>
+              <span>Structured slot</span>
+            </div>
+            <div className="canvas-grid-header">
+              <strong>Load</strong>
+              <span>Right connector zone</span>
+            </div>
+          </div>
+
+          <div className="canvas-grid-body" ref={canvasGridRef}>
+            {wireRenderPaths.length > 0 ? (
+              <svg className="canvas-wire-overlay" aria-label="Harness routing preview">
+                {wireRenderPaths.map((wirePath) => (
+                  <g
+                    key={wirePath.id}
+                    className={`canvas-wire-overlay__group${
+                      editingWireId === wirePath.id ? ' is-active' : ''
+                    }`}
+                  >
+                    <path className="canvas-wire-overlay__shadow" d={wirePath.path} />
+                    <path
+                      className="canvas-wire-overlay__hit"
+                      d={wirePath.path}
+                      onClick={() => handleEditWire(wirePath.id)}
+                    />
+                    <path
+                      className="canvas-wire-overlay__path"
+                      d={wirePath.path}
+                      style={{ stroke: wirePath.stroke }}
+                    />
+                    <circle
+                      className="canvas-wire-overlay__node"
+                      cx={wirePath.startX}
+                      cy={wirePath.startY}
+                      r="4"
+                    />
+                    <circle
+                      className="canvas-wire-overlay__node"
+                      cx={wirePath.endX}
+                      cy={wirePath.endY}
+                      r="4"
+                    />
+                    <circle
+                      className="canvas-wire-overlay__handle-ring"
+                      cx={wirePath.midX}
+                      cy={wirePath.midY}
+                      r="9"
+                      onClick={() => handleEditWire(wirePath.id)}
+                    />
+                    <circle
+                      className="canvas-wire-overlay__handle"
+                      cx={wirePath.midX}
+                      cy={wirePath.midY}
+                      r="5"
+                      onClick={() => handleEditWire(wirePath.id)}
+                    />
+                  </g>
+                ))}
+              </svg>
+            ) : null}
+            <div className="canvas-grid">
             <CanvasLane
               title="Source"
               subtitle="Left connector zone"
@@ -814,6 +838,7 @@ export function ConfiguratorCanvasPage() {
               addLabel="Add left connector"
               onAddClick={() => toggleAddLane('left')}
               addPanel={openAddLane === 'left' ? renderConnectorPicker('left') : null}
+              showHeader={false}
             >
               {leftConnectors.map((connector) => (
                 <ConnectorObjectCard
@@ -838,6 +863,7 @@ export function ConfiguratorCanvasPage() {
               addLabel="Add element"
               onAddClick={() => toggleAddLane('column-1')}
               addPanel={openAddLane === 'column-1' ? renderMidElementPicker(1) : null}
+              showHeader={false}
             >
               {columnOne.map((midElement) => (
                 <MidElementObjectCard
@@ -862,6 +888,7 @@ export function ConfiguratorCanvasPage() {
               addLabel="Add element"
               onAddClick={() => toggleAddLane('column-2')}
               addPanel={openAddLane === 'column-2' ? renderMidElementPicker(2) : null}
+              showHeader={false}
             >
               {columnTwo.map((midElement) => (
                 <MidElementObjectCard
@@ -886,6 +913,7 @@ export function ConfiguratorCanvasPage() {
               addLabel="Add element"
               onAddClick={() => toggleAddLane('column-3')}
               addPanel={openAddLane === 'column-3' ? renderMidElementPicker(3) : null}
+              showHeader={false}
             >
               {columnThree.map((midElement) => (
                 <MidElementObjectCard
@@ -910,6 +938,7 @@ export function ConfiguratorCanvasPage() {
               addLabel="Add right connector"
               onAddClick={() => toggleAddLane('right')}
               addPanel={openAddLane === 'right' ? renderConnectorPicker('right') : null}
+              showHeader={false}
             >
               {rightConnectors.map((connector) => (
                 <ConnectorObjectCard
@@ -926,6 +955,7 @@ export function ConfiguratorCanvasPage() {
                 />
               ))}
             </CanvasLane>
+          </div>
           </div>
         </div>
       </section>

@@ -1740,6 +1740,12 @@ body {
 }
 
 .canvas-grid-shell {
+  --canvas-lane-columns:
+    minmax(248px, 1.24fr)
+    repeat(3, minmax(154px, 0.8fr))
+    minmax(248px, 1.24fr);
+  display: grid;
+  gap: 0.85rem;
   position: relative;
   padding: 1rem 1.15rem 1.05rem;
   border-radius: 26px;
@@ -1750,11 +1756,37 @@ body {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
+.canvas-grid-headers {
+  display: grid;
+  grid-template-columns: var(--canvas-lane-columns);
+  gap: 1.85rem;
+  align-items: end;
+}
+
+.canvas-grid-header {
+  display: grid;
+  gap: 0.08rem;
+  padding: 0 0.2rem;
+}
+
+.canvas-grid-header strong {
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #667085;
+}
+
+.canvas-grid-header span {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.canvas-grid-body {
+  position: relative;
+}
+
 .canvas-grid {
-  grid-template-columns:
-    minmax(248px, 1.24fr)
-    repeat(3, minmax(154px, 0.8fr))
-    minmax(248px, 1.24fr);
+  grid-template-columns: var(--canvas-lane-columns);
   gap: 1.85rem;
 }
 
@@ -2126,8 +2158,12 @@ body {
 }
 
 @media (max-width: 1180px) {
-  .canvas-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .canvas-grid-shell {
+    --canvas-lane-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .canvas-grid-headers {
+    display: none;
   }
 
   .quote-summary-meta {
@@ -2170,9 +2206,12 @@ body {
   .home-support-band,
   .quote-summary-meta,
   .canvas-picker-grid--rich,
-  .canvas-grid,
   .field-row {
     grid-template-columns: 1fr;
+  }
+
+  .canvas-grid-shell {
+    --canvas-lane-columns: 1fr;
   }
 
   .home-support-band__actions {
