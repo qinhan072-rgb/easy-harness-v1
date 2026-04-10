@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { HarnessPreviewGraphic } from '../components/preview/HarnessPreviewGraphic';
 import { PageHeader } from '../components/PageHeader';
+import { HarnessPreviewGraphic } from '../components/preview/HarnessPreviewGraphic';
+import { ProductionLayoutPreview } from '../components/preview/ProductionLayoutPreview';
+import { ProductionPackTables } from '../components/preview/ProductionPackTables';
 import { useRequestSession } from '../context/RequestSessionContext';
 import { publicPreviewStatuses, requestStatusMeta } from '../data/requestMeta';
 import { useRequestRecord } from '../hooks/useRequestRecord';
 import type { RequestStatus } from '../types/request';
-import { buildHarnessPreviewModel } from '../utils/harnessPreview';
+import { buildHarnessPreviewModel } from '../utils/harnessPreviewModel';
 import { updateRequest } from '../utils/requestApi';
 
 const actionablePreviewStatuses = new Set<RequestStatus>([
@@ -52,7 +54,7 @@ export function GeneratedPreviewPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Harness Preview"
+          title="Generated Preview"
           description="Loading the generated harness preview."
           badge="Loading"
         />
@@ -69,7 +71,7 @@ export function GeneratedPreviewPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Harness Preview"
+          title="Generated Preview"
           description="We could not load this preview."
           badge="Unavailable"
         />
@@ -89,8 +91,8 @@ export function GeneratedPreviewPage() {
     return (
       <div className="page-stack">
         <PageHeader
-          title="Harness Preview"
-          description="Available after a request has enough detail to generate a harness preview."
+          title="Generated Preview"
+          description="Available after enough request detail has been captured."
           badge="Waiting"
         />
         <section className="panel">
@@ -122,32 +124,37 @@ export function GeneratedPreviewPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        title="Harness Preview"
+        title="Generated Preview"
         description={
           canRespond
-            ? 'Review the generated harness preview and confirm the next step.'
+            ? 'Review the generated harness preview and continue when the order is ready.'
             : 'The generated harness preview remains available for reference.'
         }
         badge={requestStatusMeta[request.status].label}
       />
 
-      <section className="preview-page">
-        <article className="panel preview-page__hero">
+      <section className="preview-page preview-page--hero">
+        <article className="panel preview-page__hero-panel">
           <div className="preview-page__hero-copy">
             <span className="eyebrow">{preview.sourceLabel}</span>
             <h2>{request.projectName}</h2>
             <p>{preview.summary}</p>
+            <div className="preview-page__hero-meta">
+              <span>{request.id}</span>
+              <span>{preview.quantityLabel}</span>
+              <span>{preview.leadTimeLabel}</span>
+            </div>
           </div>
-          <HarnessPreviewGraphic model={preview} />
+          <HarnessPreviewGraphic model={preview} className="preview-page__graphic" />
         </article>
 
-        <aside className="panel preview-page__summary">
+        <aside className="panel preview-page__summary-panel">
           <div className="panel-heading">
             <h3>Generated summary</h3>
             <p>
               {canRespond
-                ? 'The generated harness is ready for order review.'
-                : 'This request has already moved forward from preview review.'}
+                ? 'The generated harness is ready for confirmation.'
+                : 'This preview remains available while the order moves forward.'}
             </p>
           </div>
 
@@ -204,11 +211,26 @@ export function GeneratedPreviewPage() {
               <ul className="simple-list">
                 <li>Source: {preview.sourceLabel}</li>
                 <li>Attachments: {preview.attachmentsLabel}</li>
-                <li>Summary: {preview.summary}</li>
+                <li>Protection: {preview.protectionLabel}</li>
+                {request.manufacturableNotes ? (
+                  <li>Manufacturing note: {request.manufacturableNotes}</li>
+                ) : null}
               </ul>
             </div>
           </div>
         </aside>
+      </section>
+
+      <section className="panel preview-page__production">
+        <div className="panel-heading">
+          <h3>Production Layout Preview</h3>
+          <p>
+            Flattened layout, reference structure, and preparation tables from the
+            current harness request.
+          </p>
+        </div>
+        <ProductionLayoutPreview model={preview} requestId={request.id} />
+        <ProductionPackTables model={preview} />
       </section>
 
       <section className="panel">
@@ -216,9 +238,9 @@ export function GeneratedPreviewPage() {
           <h3>Next action</h3>
           <p>
             {canRespond
-              ? 'Place the order to continue with payment and final handling, or request changes if the preview needs correction.'
+              ? 'Place the order to continue, or request changes if one point still needs correction.'
               : isSubmitted
-                ? 'Order received. Payment and final handling are next.'
+                ? 'Order received. Final handling and payment follow next.'
                 : 'This preview remains available while the request moves through the next stage.'}
           </p>
         </div>

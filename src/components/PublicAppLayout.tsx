@@ -5,11 +5,9 @@ import {
   publicPreviewStatuses,
   publicRequestSourceLabels,
   publicRequestStageMeta,
-  requestSourceLabels,
-  requestStatusMeta,
 } from '../data/requestMeta';
 
-export function AppLayout() {
+export function PublicAppLayout() {
   const { activeRequest, isLoadingActiveRequest } = useRequestSession();
   const currentRequestTitle = isLoadingActiveRequest
     ? 'Loading request...'
@@ -36,9 +34,6 @@ export function AppLayout() {
   const currentPublicStage = activeRequest
     ? publicRequestStageMeta[getPublicRequestStage(activeRequest.status)].label
     : null;
-  const currentRequestDetail = activeRequest
-    ? `${requestSourceLabels[activeRequest.source]} · ${requestStatusMeta[activeRequest.status].label}`
-    : 'Submit from AI, canvas, or upload.';
 
   return (
     <div className="app-shell">

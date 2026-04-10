@@ -310,7 +310,7 @@ export function ConfiguratorCanvasPage() {
         {filteredChoices.length === 0 ? (
           <p className="helper-copy">
             No connector families match that search. Try a broader search or
-            continue with AI for a custom request.
+            continue in AI Agent for a custom request.
           </p>
         ) : null}
       </div>
@@ -573,7 +573,7 @@ export function ConfiguratorCanvasPage() {
   function openCanvasSubmitModal() {
     if (!canvasEvaluation.canSubmit) {
       setCanvasValidationNotice(
-        'Submission is on hold. Complete the missing structured items listed below before sending this request.',
+        'Preview generation is on hold. Complete the missing structured items listed below before continuing.',
       );
       setCanvasSubmissionError(null);
       return;
@@ -599,7 +599,7 @@ export function ConfiguratorCanvasPage() {
   async function handleCreateCanvasRequest() {
     if (!canvasEvaluation.canSubmit) {
       setCanvasValidationNotice(
-        'Submission is on hold. Complete the missing structured items listed below before sending this request.',
+        'Preview generation is on hold. Complete the missing structured items listed below before continuing.',
       );
       setCanvasSubmissionError(null);
       return;
@@ -623,7 +623,7 @@ export function ConfiguratorCanvasPage() {
         draftSummary:
           canvasRequestSummary.trim() || buildCanvasRequestSummary(state.canvasDraft),
         manufacturableNotes:
-          'This configured harness stays inside the current structured boundary and is ready for direct order review.',
+          'This configured harness stays inside the current structured boundary and is ready for generated preview.',
         quotePlaceholder: canvasEvaluation.quoteEstimate,
         leadTimeNote: buildConfiguratorLeadTimeNote(canvasLeadTimePreference),
         quantity: canvasQuantity,
@@ -643,14 +643,14 @@ export function ConfiguratorCanvasPage() {
       });
       setActiveRequestId(request.id);
       setIsCanvasSubmitOpen(false);
-      navigate(`/review-order/${request.id}`);
+      navigate(`/preview/${request.id}`);
     } catch (submitError) {
       const detail =
         submitError instanceof Error
           ? submitError.message
           : 'Unable to save the request.';
       setCanvasSubmissionError(
-        `We could not save the request. The current setup still remains ready for submission. ${detail}`,
+        `We could not save the request. The current setup still remains ready for preview generation. ${detail}`,
       );
     } finally {
       setIsSubmittingCanvasRequest(false);
@@ -682,9 +682,9 @@ export function ConfiguratorCanvasPage() {
   const isEditingWire = editingWireId !== null;
   const canvasRequestFormValidation =
     !canvasProjectName.trim()
-      ? 'Add a project name before creating the request.'
+      ? 'Add a project name before generating the preview.'
       : canvasQuantity < 1
-        ? 'Quantity must be at least 1 before creating the request.'
+        ? 'Quantity must be at least 1 before generating the preview.'
         : null;
   const canvasValidationReasons = canvasEvaluation.validationReasons;
 
@@ -708,7 +708,7 @@ export function ConfiguratorCanvasPage() {
         <div className="canvas-toolbar__copy">
           <span className="eyebrow">Canvas path</span>
           <strong>Structured harness workspace</strong>
-          <p>Prepare one structured left-to-right harness path here.</p>
+          <p>Prepare one structured left-to-right harness path and generate the preview when the layout is complete.</p>
         </div>
         <div className="canvas-toolbar__actions">
           <span
@@ -721,14 +721,9 @@ export function ConfiguratorCanvasPage() {
             {canvasEvaluation.status}
           </span>
           {!canvasEvaluation.canSubmit ? (
-            <>
-              <Link to="/ai-agent" className="button button-secondary">
-                Continue with AI
-              </Link>
-              <Link to="/upload" className="button button-ghost">
-                Use Upload Intake
-              </Link>
-            </>
+            <Link to="/ai-agent" className="button button-secondary">
+              Continue in AI Agent
+            </Link>
           ) : null}
         </div>
       </section>
@@ -975,12 +970,12 @@ export function ConfiguratorCanvasPage() {
         ) : null}
         {canvasEvaluation.canSubmit ? (
           <div className="info-banner info-banner--subtle">
-            This setup is ready for order placement inside the current structured boundary. Review the order to continue.
+            This setup is ready for preview generation inside the current structured boundary.
           </div>
         ) : null}
         {!canvasEvaluation.canSubmit ? (
           <div className="info-banner info-banner--subtle">
-            <strong>Complete the following items before submission:</strong>
+            <strong>Complete the following items before generating the preview:</strong>
             <ul className="simple-list validation-reason-list">
               {canvasValidationReasons.map((reason) => (
                 <li key={`${reason.code}-${reason.detail}`}>
@@ -1024,7 +1019,7 @@ export function ConfiguratorCanvasPage() {
         wireCount={state.canvasDraft.wires.length}
         quoteEstimate={canvasEvaluation.quoteEstimate}
         disabled={!canvasEvaluation.canSubmit}
-        submitLabel="Review Order"
+        submitLabel="Generate Preview"
         onSubmit={openCanvasSubmitModal}
       />
 
@@ -1034,8 +1029,8 @@ export function ConfiguratorCanvasPage() {
             <div className="canvas-modal__header">
               <div className="canvas-modal__copy">
                 <span className="eyebrow">Save request</span>
-                <h3>Save and continue to order review</h3>
-                <p>Enter the required request details, save the structured order, and continue.</p>
+                <h3>Save and generate preview</h3>
+                <p>Enter the required request details, save the structured harness, and continue to the generated preview.</p>
               </div>
               <button
                 type="button"
@@ -1051,7 +1046,7 @@ export function ConfiguratorCanvasPage() {
                 {state.canvasDraft.midElements.length} elements,{' '}
                 {state.canvasDraft.wires.length} wires
               </strong>
-              <span>Ready for order review</span>
+              <span>Ready for preview generation</span>
             </div>
             <div className="field-row">
               <label className="field">
@@ -1125,7 +1120,7 @@ export function ConfiguratorCanvasPage() {
               </div>
             ) : (
               <div className="info-banner info-banner--subtle">
-                Save the structured request to continue to the order review step.
+                Save the structured request to continue to the generated preview.
               </div>
             )}
             <div className="canvas-modal__actions">
@@ -1138,8 +1133,8 @@ export function ConfiguratorCanvasPage() {
                 onClick={handleCreateCanvasRequest}
               >
                 {isSubmittingCanvasRequest
-                  ? 'Submitting request...'
-                  : 'Save and Review Order'}
+                  ? 'Saving request...'
+                  : 'Save and Generate Preview'}
               </button>
             </div>
           </div>
@@ -1153,7 +1148,7 @@ export function ConfiguratorCanvasPage() {
               <div className="canvas-modal__copy">
                 <span className="eyebrow">Wire</span>
                 <h3>{isEditingWire ? 'Refine wire' : 'Configure wire draft'}</h3>
-                <p>Endpoints are already selected. Add the remaining wire details here, or continue with AI if routing needs broader interpretation.</p>
+                <p>Endpoints are already selected. Add the remaining wire details here before the generated preview is prepared.</p>
               </div>
               <button
                 type="button"
@@ -1263,9 +1258,6 @@ export function ConfiguratorCanvasPage() {
               <button type="button" className="button" onClick={handleSaveWire}>
                 {isEditingWire ? 'Save Wire' : 'Add Connection'}
               </button>
-              <Link to="/ai-agent" className="button button-secondary">
-                Finish This With AI
-              </Link>
             </div>
           </div>
         </div>
@@ -1280,7 +1272,7 @@ export function ConfiguratorCanvasPage() {
                   <div className="canvas-modal__copy">
                     <span className="eyebrow">Connector</span>
                     <h3>Refine connector</h3>
-                    <p>The object is already placed in the workspace. Adjust only the details needed for this draft boundary.</p>
+                    <p>The connector is already placed in the workspace. Adjust only the details needed for the generated preview.</p>
                   </div>
                   <button
                     type="button"
@@ -1348,9 +1340,6 @@ export function ConfiguratorCanvasPage() {
                   <button type="button" className="button" onClick={handleSaveConnector}>
                     Save Connector
                   </button>
-                  <Link to="/ai-agent" className="button button-secondary">
-                    Let AI Continue
-                  </Link>
                 </div>
               </>
             ) : null}
@@ -1403,9 +1392,6 @@ export function ConfiguratorCanvasPage() {
                   <button type="button" className="button" onClick={handleSaveMidElement}>
                     Save Mid Element
                   </button>
-                  <Link to="/ai-agent" className="button button-secondary">
-                    Let AI Continue
-                  </Link>
                 </div>
               </>
             ) : null}

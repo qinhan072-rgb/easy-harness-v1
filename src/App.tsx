@@ -1,26 +1,26 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AIAgentPage } from './pages/AIAgentPage';
-import { AppLayout } from './components/AppLayout';
+import { AIAgentWorkspacePage } from './pages/AIAgentWorkspacePage';
 import { OpsLayout } from './components/OpsLayout';
+import { PublicAppLayout } from './components/PublicAppLayout';
 import { RequireOpsAccess } from './components/RequireOpsAccess';
 import { ConfiguratorCanvasPage } from './pages/ConfiguratorCanvasPage';
 import { GeneratedPreviewPage } from './pages/GeneratedPreviewPage';
-import { HomePage } from './pages/HomePage';
+import { HomeLandingPage } from './pages/HomeLandingPage';
 import { OpsEntryPage } from './pages/OpsEntryPage';
-import { ProcessingStatusPage } from './pages/ProcessingStatusPage';
-import { RequestDetailPage } from './pages/RequestDetailPage';
+import { OpsRequestWorkbenchPage } from './pages/OpsRequestWorkbenchPage';
+import { RequestTrackingPage } from './pages/RequestTrackingPage';
 import { RequestInboxPage } from './pages/RequestInboxPage';
 
 function App() {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/ai-agent" element={<AIAgentPage />} />
+      <Route element={<PublicAppLayout />}>
+        <Route path="/" element={<HomeLandingPage />} />
+        <Route path="/ai-agent" element={<AIAgentWorkspacePage />} />
         <Route path="/configurator" element={<ConfiguratorCanvasPage />} />
         <Route path="/upload" element={<Navigate to="/ai-agent" replace />} />
-        <Route path="/processing" element={<ProcessingStatusPage />} />
-        <Route path="/processing/:requestId" element={<ProcessingStatusPage />} />
+        <Route path="/processing" element={<RequestTrackingPage />} />
+        <Route path="/processing/:requestId" element={<RequestTrackingPage />} />
         <Route path="/preview/:requestId" element={<GeneratedPreviewPage />} />
         <Route path="/review-order/:requestId" element={<GeneratedPreviewPage />} />
         <Route path="/order-confirmation" element={<Navigate to="/processing" replace />} />
@@ -46,7 +46,7 @@ function App() {
         element={
           <RequireOpsAccess>
             <OpsLayout>
-              <RequestDetailPage />
+              <OpsRequestWorkbenchPage />
             </OpsLayout>
           </RequireOpsAccess>
         }

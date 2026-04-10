@@ -1,4 +1,4 @@
-import type { HarnessPreviewModel } from '../../utils/harnessPreview';
+import type { HarnessPreviewModel } from '../../utils/harnessPreviewModel';
 
 type HarnessPreviewGraphicProps = {
   model: HarnessPreviewModel;
@@ -238,6 +238,16 @@ export function HarnessPreviewGraphic({
           </text>
           <text x="496" y="444" textAnchor="middle" className="harness-preview__spec-value">
             {model.mainWireSpec}
+          </text>
+        </g>
+
+        <g className="harness-preview__protection-callout">
+          <rect x="622" y="404" width="206" height="46" rx="22" />
+          <text x="725" y="425" textAnchor="middle" className="harness-preview__spec-label">
+            Protection
+          </text>
+          <text x="725" y="444" textAnchor="middle" className="harness-preview__spec-value">
+            {model.protectionLabel}
           </text>
         </g>
 
