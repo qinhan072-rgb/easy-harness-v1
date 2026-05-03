@@ -21,6 +21,7 @@ function App() {
         <Route path="/upload" element={<Navigate to="/ai-agent" replace />} />
         <Route path="/processing" element={<RequestTrackingPage />} />
         <Route path="/processing/:requestId" element={<RequestTrackingPage />} />
+        <Route path="/generated/:requestId" element={<GeneratedPreviewPage />} />
         <Route path="/preview/:requestId" element={<GeneratedPreviewPage />} />
         <Route path="/review-order/:requestId" element={<GeneratedPreviewPage />} />
         <Route path="/order-confirmation" element={<Navigate to="/processing" replace />} />

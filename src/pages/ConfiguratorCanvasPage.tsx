@@ -424,7 +424,7 @@ export function ConfiguratorCanvasPage() {
   }
 
   function handlePinClick(nodeId: string, pin: string) {
-    setSelectedNodeId(nodeId);
+    setSelectedNodeId(null);
     setOpenAddLane(null);
     setEditingWireId(null);
 
@@ -643,7 +643,7 @@ export function ConfiguratorCanvasPage() {
       });
       setActiveRequestId(request.id);
       setIsCanvasSubmitOpen(false);
-      navigate(`/preview/${request.id}`);
+      navigate(`/generated/${request.id}`);
     } catch (submitError) {
       const detail =
         submitError instanceof Error
@@ -1019,7 +1019,7 @@ export function ConfiguratorCanvasPage() {
         wireCount={state.canvasDraft.wires.length}
         quoteEstimate={canvasEvaluation.quoteEstimate}
         disabled={!canvasEvaluation.canSubmit}
-        submitLabel="Generate Preview"
+        submitLabel="Start Generating"
         onSubmit={openCanvasSubmitModal}
       />
 
@@ -1029,7 +1029,7 @@ export function ConfiguratorCanvasPage() {
             <div className="canvas-modal__header">
               <div className="canvas-modal__copy">
                 <span className="eyebrow">Save request</span>
-                <h3>Save and generate preview</h3>
+                <h3>Save and start generating</h3>
                 <p>Enter the required request details, save the structured harness, and continue to the generated preview.</p>
               </div>
               <button
@@ -1134,7 +1134,7 @@ export function ConfiguratorCanvasPage() {
               >
                 {isSubmittingCanvasRequest
                   ? 'Saving request...'
-                  : 'Save and Generate Preview'}
+                  : 'Save and Start Generating'}
               </button>
             </div>
           </div>

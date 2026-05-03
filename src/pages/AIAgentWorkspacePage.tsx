@@ -568,7 +568,7 @@ export function AIAgentWorkspacePage() {
     try {
       const request = await createAiRequest(formData);
       setActiveRequestId(request.id);
-      navigate(`/preview/${request.id}`);
+      navigate(`/generated/${request.id}`);
     } catch (submitError) {
       setFeedback(
         submitError instanceof Error
@@ -770,7 +770,7 @@ export function AIAgentWorkspacePage() {
                   disabled={isSubmitting}
                   onClick={() => void handleGeneratePreview()}
                 >
-                  {isSubmitting ? 'Generating preview...' : 'Generate Preview'}
+                  {isSubmitting ? 'Generating preview...' : 'Start Generating'}
                 </button>
               </div>
             ) : (

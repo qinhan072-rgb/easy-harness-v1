@@ -426,7 +426,7 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
       validationReasons,
       issues: validationReasons.map(formatValidationReason),
       assistedReviewReasons: [
-        'Continue with AI Agent or Upload Intake if the request already depends on reference files or exceeds the current canvas boundary.',
+        'Continue with AI Agent if the request depends on reference files or exceeds the current canvas boundary.',
       ],
       canSubmit: false,
       quoteEstimate: buildQuoteEstimate(draft),
@@ -558,7 +558,7 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
     addValidationReason(validationReasons, {
       code: 'unsupported-structure',
       title: 'Unsupported structure for canvas boundary',
-      detail: 'The current structure includes multiple active endpoints on one side. Move this request into AI or Upload for assisted review.',
+      detail: 'The current structure includes multiple active endpoints on one side. Continue in AI Agent for assisted intake.',
     });
   }
 
@@ -581,7 +581,7 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
       addValidationReason(validationReasons, {
         code: 'unsupported-structure',
         title: 'Unsupported structure for canvas boundary',
-        detail: `${node.label} branches into more than two connections. Continue with AI or Upload for non-standard routing.`,
+        detail: `${node.label} branches into more than two connections. Continue with AI Agent for non-standard routing.`,
       });
     }
   }
@@ -597,7 +597,7 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
     )
   ) {
     assistedReviewReasons.push(
-      'Continue with AI Agent or Upload Intake if the structure does not resolve into one clear left-to-right path.',
+      'Continue with AI Agent if the structure does not resolve into one clear left-to-right path.',
     );
   }
 
@@ -609,19 +609,19 @@ export function evaluateCanvasDraft(draft: CanvasDraft): CanvasEvaluation {
     )
   ) {
     assistedReviewReasons.push(
-      'Continue with AI Agent or Upload Intake if the connector set extends beyond one structured harness path.',
+      'Continue with AI Agent if the connector set extends beyond one structured harness path.',
     );
   }
 
   if (validationReasons.some((reason) => reason.code === 'disconnected-element')) {
     assistedReviewReasons.push(
-      'Continue with AI Agent or Upload Intake if the mid elements require branching, ambiguous routing, or off-canvas logic.',
+      'Continue with AI Agent if the mid elements require branching, ambiguous routing, or off-canvas logic.',
     );
   }
 
   if (validationReasons.length > 0) {
     assistedReviewReasons.push(
-      'Continue with AI Agent or Upload Intake if key details still need interpretation outside the canvas boundary.',
+      'Continue with AI Agent if key details still need interpretation outside the canvas boundary.',
     );
   }
 

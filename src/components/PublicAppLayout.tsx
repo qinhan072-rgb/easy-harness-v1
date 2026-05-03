@@ -25,7 +25,7 @@ export function PublicAppLayout() {
   ];
   const previewNavItem = activeRequest
     ? publicPreviewStatuses.has(activeRequest.status)
-      ? { label: 'Harness Preview', path: `/preview/${activeRequest.id}` }
+      ? { label: 'Harness Preview', path: `/generated/${activeRequest.id}` }
       : null
     : null;
   const visibleNavItems = previewNavItem

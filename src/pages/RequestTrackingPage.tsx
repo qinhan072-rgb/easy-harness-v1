@@ -123,7 +123,7 @@ export function RequestTrackingPage() {
   const stageMeta = publicRequestStageMeta[publicStage];
   const previewPath =
     publicStage === 'review-required' && publicPreviewStatuses.has(request.status)
-      ? `/preview/${request.id}`
+      ? `/generated/${request.id}`
       : null;
 
   return (

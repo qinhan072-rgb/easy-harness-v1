@@ -27,7 +27,7 @@ export function AppLayout() {
   ];
   const previewNavItem = activeRequest
     ? publicPreviewStatuses.has(activeRequest.status)
-      ? { label: 'Harness Preview', path: `/preview/${activeRequest.id}` }
+      ? { label: 'Harness Preview', path: `/generated/${activeRequest.id}` }
       : null
     : null;
   const visibleNavItems = previewNavItem
@@ -37,8 +37,8 @@ export function AppLayout() {
     ? publicRequestStageMeta[getPublicRequestStage(activeRequest.status)].label
     : null;
   const currentRequestDetail = activeRequest
-    ? `${requestSourceLabels[activeRequest.source]} · ${requestStatusMeta[activeRequest.status].label}`
-    : 'Submit from AI, canvas, or upload.';
+    ? `${requestSourceLabels[activeRequest.source]} - ${requestStatusMeta[activeRequest.status].label}`
+    : 'Submit from AI Agent or Configurator.';
 
   return (
     <div className="app-shell">

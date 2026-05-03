@@ -465,7 +465,7 @@ export function OpsRequestWorkbenchPage() {
             <Link to={`/processing/${request.id}`} className="button">
               View Request Status
             </Link>
-            <Link to={`/preview/${request.id}`} className="button button-secondary">
+            <Link to={`/generated/${request.id}`} className="button button-secondary">
               View Harness Preview
             </Link>
             <Link to="/ops/requests" className="button button-ghost">

@@ -26,7 +26,7 @@ export function ProductionPackTables({ model }: ProductionPackTablesProps) {
               <span>{row.family}</span>
               <span>
                 {row.detail}
-                {row.estimated ? ' · Estimated' : ''}
+                {row.estimated ? ' - Estimated' : ''}
               </span>
             </div>
           ))}
@@ -52,7 +52,7 @@ export function ProductionPackTables({ model }: ProductionPackTablesProps) {
               <span>{row.lengthLabel}</span>
               <span>
                 {row.specLabel}
-                {row.estimated ? ' · Estimated' : ''}
+                {row.estimated ? ' - Estimated' : ''}
               </span>
             </div>
           ))}
@@ -78,7 +78,7 @@ export function ProductionPackTables({ model }: ProductionPackTablesProps) {
               <span>{row.location}</span>
               <span>
                 {row.detail}
-                {row.estimated ? ' · Estimated' : ''}
+                {row.estimated ? ' - Estimated' : ''}
               </span>
             </div>
           ))}

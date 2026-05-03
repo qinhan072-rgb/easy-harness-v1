@@ -18,7 +18,7 @@ export function HomeLandingPage() {
     : '/processing';
   const previewPath =
     activeRequest && publicPreviewStatuses.has(activeRequest.status)
-      ? `/preview/${activeRequest.id}`
+      ? `/generated/${activeRequest.id}`
       : null;
 
   return (
@@ -79,7 +79,7 @@ export function HomeLandingPage() {
           </strong>
           <p>
             {activeRequest
-              ? `${publicRequestSourceLabels[activeRequest.source]} · Qty ${activeRequest.quantity}`
+              ? `${publicRequestSourceLabels[activeRequest.source]} - Qty ${activeRequest.quantity}`
               : isLoadingActiveRequest
                 ? 'Loading request record'
                 : 'Start from AI Agent or Configurator.'}

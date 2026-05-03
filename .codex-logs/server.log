@@ -1,0 +1,5 @@
+
+> easy-harness-v1@0.1.0 server
+> node server/index.js
+
+Easy Harness API listening on http://127.0.0.1:8787
